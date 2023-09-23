@@ -1,7 +1,7 @@
 mod metadata;
 mod parser;
 
-use crate::metadata::Metadata;
+use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
 use clap::Parser;
@@ -40,22 +40,32 @@ fn do_main() -> Result<()> {
         packages.insert(pkg.id.clone(), pkg);
     }
 
-    let root = match metadata.resolve.root {
-        Some(root) => root,
-        None => {
-            let mut options = String::new();
-            for (i, member) in metadata.workspace_members.iter().enumerate() {
-                options += if i == 0 { "" } else { " | " };
-                options += &packages[&member].name;
+    let default_documentation_options = DocumentationOptions::default();
+    let metadata = if let Some(package) = &args.package {
+        let mut package_metadata = &default_documentation_options;
+        for workspace_member in &metadata.workspace_members {
+            if packages[workspace_member].name == *package {
+                package_metadata = &packages[workspace_member].metadata;
+                break;
             }
-            bail!(
-                "Pass `-p [{}]` to select a single workspace member",
-                options,
-            );
+        }
+        package_metadata
+    } else {
+        match metadata.resolve.root {
+            Some(root) => &packages[&root].metadata,
+            None => {
+                let mut options = String::new();
+                for (i, member) in metadata.workspace_members.iter().enumerate() {
+                    options += if i == 0 { "" } else { " | " };
+                    options += &packages[&member].name;
+                }
+                bail!(
+                    "Pass `-p [{}]` to select a single workspace member",
+                    options,
+                );
+            }
         }
     };
-
-    let metadata = &packages[&root].metadata;
 
     let mut cargo_rustdoc = cargo_command();
     cargo_rustdoc.arg("rustdoc");
