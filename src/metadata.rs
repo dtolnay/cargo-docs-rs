@@ -67,13 +67,5 @@ where
     }
 
     let outer: Option<Outer> = Deserialize::deserialize(deserializer)?;
-    if let Some(outer) = outer {
-        if let Some(inner) = outer.docs {
-            if let Some(options) = inner.rs {
-                return Ok(options);
-            }
-        }
-    }
-
-    Ok(DocumentationOptions::default())
+    Ok((|| outer?.docs?.rs)().unwrap_or_default())
 }
