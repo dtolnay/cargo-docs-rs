@@ -55,7 +55,108 @@ fn do_main() -> Result<()> {
         }
     };
 
-    println!("{:#?}", packages[&root].metadata);
+    let metadata = &packages[&root].metadata;
+
+    let mut cargo_rustdoc = cargo_command();
+    cargo_rustdoc.arg("rustdoc");
+    cargo_rustdoc.arg("-Zunstable-options");
+    cargo_rustdoc.arg("-Zrustdoc-map");
+    cargo_rustdoc.arg("-Zhost-config");
+    cargo_rustdoc.arg("-Ztarget-applies-to-host");
+    propagate_common_args(&mut cargo_rustdoc, &args);
+    cargo_rustdoc.env("DOCS_RS", "1");
+
+    cargo_rustdoc.arg("--lib");
+    if let Some(package) = &args.package {
+        cargo_rustdoc.arg("--package");
+        cargo_rustdoc.arg(package);
+    }
+
+    if !metadata.features.is_empty() {
+        cargo_rustdoc.arg("--features");
+        cargo_rustdoc.arg(metadata.features.join(","));
+    }
+
+    if metadata.all_features {
+        cargo_rustdoc.arg("--all-features");
+    }
+
+    if metadata.no_default_features {
+        cargo_rustdoc.arg("--no-default-features");
+    }
+
+    if !args.target.is_empty() {
+        for target in args.target {
+            cargo_rustdoc.arg("--target");
+            cargo_rustdoc.arg(target);
+        }
+    } else if args.open {
+        // When using `--open`, only a single target is supported.
+        if let Some(default_target) = &metadata.default_target {
+            cargo_rustdoc.arg("--target");
+            cargo_rustdoc.arg(default_target);
+        } else if let Some(targets) = &metadata.targets {
+            if let Some(default_target) = targets.first() {
+                cargo_rustdoc.arg("--target");
+                cargo_rustdoc.arg(default_target);
+            }
+        }
+    } else if let Some(targets) = &metadata.targets {
+        for target in targets {
+            cargo_rustdoc.arg("--target");
+            cargo_rustdoc.arg(target);
+        }
+    } else if let Some(default_target) = &metadata.default_target {
+        cargo_rustdoc.arg("--target");
+        cargo_rustdoc.arg(default_target);
+    }
+
+    cargo_rustdoc.arg("--config");
+    cargo_rustdoc.arg(format!(
+        "build.rustflags={}",
+        toml::Value::try_from(&metadata.rustc_args).unwrap(),
+    ));
+
+    cargo_rustdoc.arg("--config");
+    cargo_rustdoc.arg(format!(
+        "host.rustflags={}",
+        toml::Value::try_from(&metadata.rustc_args).unwrap(),
+    ));
+
+    let mut rustdocflags = metadata.rustdoc_args.clone();
+    rustdocflags.insert(0, "-Zunstable-options".to_owned());
+    rustdocflags.push("--extern-html-root-takes-precedence".to_owned());
+
+    cargo_rustdoc.arg("--config");
+    cargo_rustdoc.arg(format!(
+        "build.rustdocflags={}",
+        toml::Value::try_from(rustdocflags).unwrap(),
+    ));
+
+    cargo_rustdoc.arg("--config");
+    cargo_rustdoc.arg("doc.extern-map.registries.crates-io=\"https://docs.rs\"");
+
+    cargo_rustdoc.args(&metadata.cargo_args);
+
+    if let Some(jobs) = args.jobs {
+        cargo_rustdoc.arg("--jobs");
+        cargo_rustdoc.arg(jobs.to_string());
+    }
+
+    if let Some(target_dir) = &args.target_dir {
+        cargo_rustdoc.arg("--target-dir");
+        cargo_rustdoc.arg(target_dir);
+    }
+
+    if args.open {
+        cargo_rustdoc.arg("--open");
+    }
+
+    let status = cargo_rustdoc.status()?;
+    if !status.success() {
+        process::exit(status.code().unwrap_or(1));
+    }
+
     Ok(())
 }
 
