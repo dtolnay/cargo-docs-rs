@@ -41,30 +41,32 @@ fn do_main() -> Result<()> {
     }
 
     let default_documentation_options = DocumentationOptions::default();
+    let mut proc_macro = false;
     let metadata = if let Some(package) = &args.package {
         let mut package_metadata = &default_documentation_options;
         for workspace_member in &metadata.workspace_members {
             if packages[workspace_member].name == *package {
-                package_metadata = &packages[workspace_member].metadata;
+                let package = &packages[workspace_member];
+                proc_macro = package.is_proc_macro();
+                package_metadata = &package.metadata;
                 break;
             }
         }
         package_metadata
+    } else if let Some(root) = metadata.resolve.root {
+        let package = &packages[&root];
+        proc_macro = package.is_proc_macro();
+        &package.metadata
     } else {
-        match metadata.resolve.root {
-            Some(root) => &packages[&root].metadata,
-            None => {
-                let mut options = String::new();
-                for (i, member) in metadata.workspace_members.iter().enumerate() {
-                    options += if i == 0 { "" } else { " | " };
-                    options += &packages[&member].name;
-                }
-                bail!(
-                    "Pass `-p [{}]` to select a single workspace member",
-                    options,
-                );
-            }
+        let mut options = String::new();
+        for (i, member) in metadata.workspace_members.iter().enumerate() {
+            options += if i == 0 { "" } else { " | " };
+            options += &packages[&member].name;
         }
+        bail!(
+            "Pass `-p [{}]` to select a single workspace member",
+            options,
+        );
     };
 
     let mut cargo_rustdoc = cargo_command();
@@ -100,6 +102,8 @@ fn do_main() -> Result<()> {
             cargo_rustdoc.arg("--target");
             cargo_rustdoc.arg(target);
         }
+    } else if proc_macro {
+        // Ignore selected target because proc macro can only be built for host.
     } else if args.open {
         // When using `--open`, only a single target is supported.
         if let Some(default_target) = &metadata.default_target {

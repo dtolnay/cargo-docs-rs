@@ -12,6 +12,7 @@ pub struct Metadata {
 pub struct Package {
     pub name: String,
     pub id: PackageId,
+    pub targets: Vec<Target>,
     #[serde(deserialize_with = "deserialize_docs_rs")]
     pub metadata: DocumentationOptions,
 }
@@ -20,6 +21,11 @@ pub struct Package {
 #[serde(transparent)]
 pub struct PackageId {
     pub repr: String,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Target {
+    pub kind: Vec<String>,
 }
 
 #[derive(Deserialize, Debug)]
@@ -68,4 +74,17 @@ where
 
     let outer: Option<Outer> = Deserialize::deserialize(deserializer)?;
     Ok((|| outer?.docs?.rs)().unwrap_or_default())
+}
+
+impl Package {
+    pub fn is_proc_macro(&self) -> bool {
+        for target in &self.targets {
+            for kind in &target.kind {
+                if kind == "proc-macro" {
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }
