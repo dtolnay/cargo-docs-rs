@@ -10,11 +10,12 @@ pub struct Metadata {
 
 #[derive(Deserialize, Debug)]
 pub struct Package {
+    pub name: String,
     pub id: PackageId,
     pub manifest_path: PathBuf,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
 #[serde(transparent)]
 pub struct PackageId {
     pub repr: String,

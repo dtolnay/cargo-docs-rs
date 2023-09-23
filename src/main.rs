@@ -3,8 +3,9 @@ mod parser;
 
 use crate::metadata::Metadata;
 use crate::parser::{Doc, Subcommand};
-use anyhow::Result;
+use anyhow::{bail, Context as _, Result};
 use clap::Parser;
+use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
 use std::process::{self, Command, Stdio};
@@ -31,8 +32,30 @@ fn do_main() -> Result<()> {
         process::exit(output.status.code().unwrap_or(1));
     }
 
-    let metadata: Metadata = serde_json::from_slice(&output.stdout)?;
-    println!("{:#?}", metadata);
+    let metadata: Metadata = serde_json::from_slice(&output.stdout)
+        .context("Failed to parse output of `cargo metadata`")?;
+
+    let mut packages = Map::new();
+    for pkg in metadata.packages {
+        packages.insert(pkg.id.clone(), pkg);
+    }
+
+    let root = match metadata.resolve.root {
+        Some(root) => root,
+        None => {
+            let mut options = String::new();
+            for (i, member) in metadata.workspace_members.iter().enumerate() {
+                options += if i == 0 { "" } else { " | " };
+                options += &packages[&member].name;
+            }
+            bail!(
+                "Pass `-p [{}]` to select a single workspace member",
+                options,
+            );
+        }
+    };
+
+    println!("{:#?}", packages[&root]);
     Ok(())
 }
 
