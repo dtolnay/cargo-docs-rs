@@ -55,7 +55,7 @@ fn do_main() -> Result<()> {
         }
     };
 
-    println!("{:#?}", packages[&root]);
+    println!("{:#?}", packages[&root].metadata);
     Ok(())
 }
 
