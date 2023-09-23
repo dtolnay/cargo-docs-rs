@@ -1,6 +1,10 @@
 use clap::{Parser, ValueEnum};
 use std::path::PathBuf;
 
+const PACKAGE_SELECTION: &str = "Package Selection";
+const COMPILATION_OPTIONS: &str = "Compilation Options";
+const MANIFEST_OPTIONS: &str = "Manifest Options";
+
 #[derive(Parser)]
 #[command(bin_name = "cargo", version, author, disable_help_subcommand = true)]
 pub enum Subcommand {
@@ -15,41 +19,41 @@ pub struct Doc {
     #[arg(long)]
     pub open: bool,
 
-    /// Package to document
-    #[arg(short, long, value_name = "SPEC")]
-    pub package: Option<String>,
-
-    /// Number of parallel jobs, defaults to # of CPUs
-    #[arg(short, long, value_name = "N")]
-    pub jobs: Option<u64>,
-
-    /// Build for the target triple
-    #[arg(long, value_name = "TARGET")]
-    pub target: Vec<String>,
-
-    /// Directory for all generated artifacts
-    #[arg(long, value_name = "DIRECTORY")]
-    pub target_dir: Option<PathBuf>,
-
-    /// Path to Cargo.toml
-    #[arg(long, value_name = "PATH")]
-    pub manifest_path: Option<PathBuf>,
-
-    /// Require Cargo.lock and cache are up to date
-    #[arg(long)]
-    pub frozen: bool,
-
-    /// Require Cargo.lock is up to date
-    #[arg(long)]
-    pub locked: bool,
-
-    /// Run without accessing the network
-    #[arg(long)]
-    pub offline: bool,
-
     /// Print version
     #[arg(long)]
     pub version: bool,
+
+    /// Package to document
+    #[arg(short, long, value_name = "SPEC", help_heading = PACKAGE_SELECTION)]
+    pub package: Option<String>,
+
+    /// Number of parallel jobs, defaults to # of CPUs
+    #[arg(short, long, value_name = "N", help_heading = COMPILATION_OPTIONS)]
+    pub jobs: Option<u64>,
+
+    /// Build for the target triple
+    #[arg(long, value_name = "TARGET", help_heading = COMPILATION_OPTIONS)]
+    pub target: Vec<String>,
+
+    /// Directory for all generated artifacts
+    #[arg(long, value_name = "DIRECTORY", help_heading = COMPILATION_OPTIONS)]
+    pub target_dir: Option<PathBuf>,
+
+    /// Path to Cargo.toml
+    #[arg(long, value_name = "PATH", help_heading = MANIFEST_OPTIONS)]
+    pub manifest_path: Option<PathBuf>,
+
+    /// Require Cargo.lock and cache are up to date
+    #[arg(long, help_heading = MANIFEST_OPTIONS)]
+    pub frozen: bool,
+
+    /// Require Cargo.lock is up to date
+    #[arg(long, help_heading = MANIFEST_OPTIONS)]
+    pub locked: bool,
+
+    /// Run without accessing the network
+    #[arg(long, help_heading = MANIFEST_OPTIONS)]
+    pub offline: bool,
 }
 
 #[derive(ValueEnum, Debug, Clone, Copy)]
