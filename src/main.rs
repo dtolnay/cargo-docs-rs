@@ -1,5 +1,7 @@
+mod metadata;
 mod parser;
 
+use crate::metadata::Metadata;
 use crate::parser::{Doc, Subcommand};
 use anyhow::Result;
 use clap::Parser;
@@ -29,7 +31,8 @@ fn do_main() -> Result<()> {
         process::exit(output.status.code().unwrap_or(1));
     }
 
-    let _ = io::stdout().write_all(&output.stdout);
+    let metadata: Metadata = serde_json::from_slice(&output.stdout)?;
+    println!("{:#?}", metadata);
     Ok(())
 }
 
