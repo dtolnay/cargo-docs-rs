@@ -19,6 +19,10 @@ pub struct Doc {
     #[arg(long)]
     pub open: bool,
 
+    /// Print command lines as they are executed
+    #[arg(short, long)]
+    pub verbose: bool,
+
     /// Print version
     #[arg(long)]
     pub version: bool,

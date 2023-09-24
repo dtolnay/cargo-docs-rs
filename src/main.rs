@@ -174,6 +174,10 @@ fn do_main() -> Result<()> {
         cargo_rustdoc.arg("--open");
     }
 
+    if args.verbose {
+        cargo_rustdoc.arg("--verbose");
+    }
+
     let status = cargo_rustdoc.status()?;
     if !status.success() {
         process::exit(status.code().unwrap_or(1));
