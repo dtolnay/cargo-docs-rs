@@ -1,3 +1,9 @@
+#![allow(
+    clippy::struct_excessive_bools,
+    clippy::too_many_lines,
+    clippy::uninlined_format_args
+)]
+
 mod metadata;
 mod parser;
 
