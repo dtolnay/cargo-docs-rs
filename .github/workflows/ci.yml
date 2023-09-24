@@ -22,6 +22,7 @@ jobs:
         with:
           toolchain: ${{matrix.rust}}
       - run: cargo check
+      - run: cargo test
 
   clippy:
     name: Clippy

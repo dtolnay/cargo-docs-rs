@@ -62,3 +62,8 @@ pub enum Coloring {
     Always,
     Never,
 }
+
+#[test]
+fn test_cli() {
+    <Subcommand as clap::CommandFactory>::command().debug_assert();
+}
