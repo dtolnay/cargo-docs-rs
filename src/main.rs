@@ -10,7 +10,7 @@ mod parser;
 use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
-use clap::Parser;
+use clap::{CommandFactory as _, Parser as _};
 use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
@@ -27,6 +27,12 @@ fn main() {
 
 fn do_main() -> Result<()> {
     let Subcommand::Doc(args) = Subcommand::parse();
+
+    if args.version {
+        let mut stdout = io::stdout();
+        let _ = stdout.write_all(Subcommand::command().render_version().as_bytes());
+        return Ok(());
+    }
 
     let mut cargo_metadata = cargo_command();
     cargo_metadata.arg("metadata");
