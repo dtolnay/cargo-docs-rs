@@ -7,6 +7,27 @@
 Run `cargo rustdoc` with the same options that would be used by docs.rs, taking
 into account the `package.metadata.docs.rs` configured in Cargo.toml.
 
+```yaml
+# .github/workflows/ci.yml
+
+name: test suite
+on: [push, pull_request]
+
+jobs:
+  # ...
+
+  doc:
+    name: Documentation
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -Dwarnings
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: dtolnay/install@cargo-docs-rs
+      - run: cargo docs-rs
+```
+
 <br>
 
 #### License
