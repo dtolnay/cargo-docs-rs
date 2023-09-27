@@ -139,26 +139,46 @@ fn do_main() -> Result<()> {
         cargo_rustdoc.arg(default_target);
     }
 
+    let mut rustflags = metadata.rustc_args.clone();
+    if let Some(encoded_rustflags) = env::var_os("CARGO_ENCODED_RUSTFLAGS") {
+        if let Some(encoded_rustflags) = encoded_rustflags.to_str() {
+            rustflags.splice(0..0, encoded_rustflags.split('\x1f').map(str::to_owned));
+        }
+    } else if let Some(env_rustflags) = env::var_os("RUSTFLAGS") {
+        if let Some(env_rustflags) = env_rustflags.to_str() {
+            rustflags.splice(0..0, env_rustflags.split_whitespace().map(str::to_owned));
+        }
+    }
+
     cargo_rustdoc.arg("--config");
     cargo_rustdoc.arg(format!(
         "build.rustflags={}",
-        toml::Value::try_from(&metadata.rustc_args).unwrap(),
+        toml::Value::try_from(&rustflags).unwrap(),
     ));
 
     cargo_rustdoc.arg("--config");
     cargo_rustdoc.arg(format!(
         "host.rustflags={}",
-        toml::Value::try_from(&metadata.rustc_args).unwrap(),
+        toml::Value::try_from(&rustflags).unwrap(),
     ));
 
     let mut rustdocflags = metadata.rustdoc_args.clone();
     rustdocflags.insert(0, "-Zunstable-options".to_owned());
+    if let Some(encoded_rustdocflags) = env::var_os("CARGO_ENCODED_RUSTDOCFLAGS") {
+        if let Some(encoded_rustdocflags) = encoded_rustdocflags.to_str() {
+            rustdocflags.splice(1..1, encoded_rustdocflags.split('\x1f').map(str::to_owned));
+        }
+    } else if let Some(env_rustdocflags) = env::var_os("RUSTDOCFLAGS") {
+        if let Some(env_rustdocflags) = env_rustdocflags.to_str() {
+            rustdocflags.splice(1..1, env_rustdocflags.split_whitespace().map(str::to_owned));
+        }
+    }
     rustdocflags.push("--extern-html-root-takes-precedence".to_owned());
 
     cargo_rustdoc.arg("--config");
     cargo_rustdoc.arg(format!(
         "build.rustdocflags={}",
-        toml::Value::try_from(rustdocflags).unwrap(),
+        toml::Value::try_from(&rustdocflags).unwrap(),
     ));
 
     cargo_rustdoc.arg("--config");
@@ -183,6 +203,11 @@ fn do_main() -> Result<()> {
     if args.verbose {
         cargo_rustdoc.arg("--verbose");
     }
+
+    cargo_rustdoc.env_remove("RUSTFLAGS");
+    cargo_rustdoc.env_remove("RUSTDOCFLAGS");
+    cargo_rustdoc.env_remove("CARGO_ENCODED_RUSTFLAGS");
+    cargo_rustdoc.env_remove("CARGO_ENCODED_RUSTDOCFLAGS");
 
     let status = cargo_rustdoc.status()?;
     if !status.success() {
