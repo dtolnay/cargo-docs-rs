@@ -7,6 +7,11 @@
 Run `cargo rustdoc` with the same options that would be used by docs.rs, taking
 into account the `package.metadata.docs.rs` configured in Cargo.toml.
 
+## Example
+
+If the following GitHub Actions job succeeds, it's likely that docs.rs will
+succeed in building your crate's documentation.
+
 ```yaml
 # .github/workflows/ci.yml
 
