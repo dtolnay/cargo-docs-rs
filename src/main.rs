@@ -83,6 +83,51 @@ fn do_main() -> Result<()> {
         );
     };
 
+    let mut doc_targets = Vec::new();
+    if !args.target.is_empty() {
+        for target in &args.target {
+            doc_targets.push(target);
+        }
+    } else if proc_macro {
+        // Ignore selected target because proc macro can only be built for host.
+    } else if args.open {
+        // When using `--open`, only a single target is supported.
+        if let Some(default_target) = &metadata.default_target {
+            doc_targets.push(default_target);
+        } else if let Some(targets) = &metadata.targets {
+            if let Some(default_target) = targets.first() {
+                doc_targets.push(default_target);
+            }
+        }
+    } else if let Some(targets) = &metadata.targets {
+        for target in targets {
+            doc_targets.push(target);
+        }
+    } else if let Some(default_target) = &metadata.default_target {
+        doc_targets.push(default_target);
+    }
+
+    for target in &doc_targets {
+        let mut child = Command::new("rustc")
+            .arg("-")
+            .arg("--target")
+            .arg(target)
+            .arg("-Zunpretty=expanded")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .context("failed to spawn rustc")?;
+        let _ = child.stdin.unwrap().write_all(b"#![no_std]\n");
+        child.stdin = None; // close
+        let status = child
+            .wait()
+            .context("failed to wait for rustc subcommand")?;
+        if !status.success() {
+            process::exit(status.code().unwrap_or(1));
+        }
+    }
+
     let mut cargo_rustdoc = cargo_command();
     cargo_rustdoc.arg("rustdoc");
     cargo_rustdoc.arg("-Zunstable-options");
@@ -111,32 +156,9 @@ fn do_main() -> Result<()> {
         cargo_rustdoc.arg("--no-default-features");
     }
 
-    if !args.target.is_empty() {
-        for target in args.target {
-            cargo_rustdoc.arg("--target");
-            cargo_rustdoc.arg(target);
-        }
-    } else if proc_macro {
-        // Ignore selected target because proc macro can only be built for host.
-    } else if args.open {
-        // When using `--open`, only a single target is supported.
-        if let Some(default_target) = &metadata.default_target {
-            cargo_rustdoc.arg("--target");
-            cargo_rustdoc.arg(default_target);
-        } else if let Some(targets) = &metadata.targets {
-            if let Some(default_target) = targets.first() {
-                cargo_rustdoc.arg("--target");
-                cargo_rustdoc.arg(default_target);
-            }
-        }
-    } else if let Some(targets) = &metadata.targets {
-        for target in targets {
-            cargo_rustdoc.arg("--target");
-            cargo_rustdoc.arg(target);
-        }
-    } else if let Some(default_target) = &metadata.default_target {
+    for target in &doc_targets {
         cargo_rustdoc.arg("--target");
-        cargo_rustdoc.arg(default_target);
+        cargo_rustdoc.arg(target);
     }
 
     let mut rustflags = metadata.rustc_args.clone();
