@@ -107,6 +107,27 @@ fn do_main() -> Result<()> {
         doc_targets.push(default_target);
     }
 
+    for target in &doc_targets {
+        let mut child = Command::new("rustc")
+            .arg("-")
+            .arg("--target")
+            .arg(target)
+            .arg("-Zunpretty=expanded")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .stderr(Stdio::inherit())
+            .spawn()
+            .context("failed to spawn rustc")?;
+        let _ = child.stdin.unwrap().write_all(b"#![no_std]\n");
+        child.stdin = None; // close
+        let status = child
+            .wait()
+            .context("failed to wait for rustc subcommand")?;
+        if !status.success() {
+            process::exit(status.code().unwrap_or(1));
+        }
+    }
+
     let mut cargo_rustdoc = cargo_command();
     cargo_rustdoc.arg("rustdoc");
     cargo_rustdoc.arg("-Zunstable-options");
@@ -135,7 +156,7 @@ fn do_main() -> Result<()> {
         cargo_rustdoc.arg("--no-default-features");
     }
 
-    for target in doc_targets {
+    for target in &doc_targets {
         cargo_rustdoc.arg("--target");
         cargo_rustdoc.arg(target);
     }
