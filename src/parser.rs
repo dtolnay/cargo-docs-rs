@@ -8,7 +8,7 @@ const MANIFEST_OPTIONS: &str = "Manifest Options";
 #[derive(Parser)]
 #[command(bin_name = "cargo", version, author, disable_help_subcommand = true)]
 pub enum Subcommand {
-    /// Immitate the documentation build that docs.rs would do
+    /// Imitate the documentation build that docs.rs would do
     #[command(name = "docs-rs", version, author, disable_version_flag = true)]
     Doc(Doc),
 }

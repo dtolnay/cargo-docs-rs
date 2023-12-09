@@ -16,7 +16,7 @@ use std::env;
 use std::io::{self, Write as _};
 use std::process::{self, Command, Stdio};
 
-cargo_subcommand_metadata::description!("Immitate the documentation build that docs.rs would do");
+cargo_subcommand_metadata::description!("Imitate the documentation build that docs.rs would do");
 
 fn main() {
     if let Err(error) = do_main() {
