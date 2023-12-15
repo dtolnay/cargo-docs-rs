@@ -1,0 +1,89 @@
+{#
+    The standard package navigation menu
+
+    * `title` A possibly-null string. If it is null, `metadata.name metadata.version` will be used as the title
+    * `metadata` A non-null instance of the MetaData struct
+    * `active_tab` A string with one of the following values:
+        * `crate`
+        * `source`
+        * `builds`
+        * `features`
+
+    Note: `false` here is acting as a pseudo-null value since you can't directly construct null values
+           and tera requires all parameters without defaults to be filled
+#}
+{% macro package_navigation(title=false, metadata, active_tab) %}
+    <div class="docsrs-package-container">
+        <div class="container">
+            <div class="description-container">
+                {# The partial path of the crate, `:name/:release` #}
+                {%- set crate_path = metadata.name ~ "/" ~ metadata.version_or_latest -%}
+
+                {# If docs are built, show a button for them #}
+
+                {# Page title #}
+                <h1 id="crate-title">
+                    {%- if title -%}
+                        {{ title }}
+                    {%- else -%}
+                        {{ metadata.name }} {{ metadata.version }}
+                        <span id="clipboard" class="fa-svg fa-svg-fw" title="Copy crate name and version information">{%- include "clipboard.svg" -%}</span>
+                    {%- endif -%}
+                </h1>
+
+                {# Page description #}
+                <div class="description">
+                    {%- if metadata.description -%}
+                        {{ metadata.description }}
+                    {%- endif -%}
+                </div>
+
+
+                <div class="pure-menu pure-menu-horizontal">
+                    <ul class="pure-menu-list">
+                        {# The crate information tab #}
+                        <li class="pure-menu-item"><a href="/crate/{{ crate_path | safe }}"
+                                class="pure-menu-link{% if active_tab == 'crate' %} pure-menu-active{% endif %}">
+                                {{ "cube" | fas }}
+                                <span class="title"> Crate</span>
+                            </a>
+                        </li>
+
+                        {# The source view tab #}
+                        <li class="pure-menu-item">
+                            <a href="/crate/{{ crate_path | safe }}/source/"
+                                class="pure-menu-link{% if active_tab == 'source' %} pure-menu-active{% endif %}">
+                                {{ "folder-open" | far }}
+                                <span class="title"> Source</span>
+                            </a>
+                        </li>
+
+                        {# The builds tab #}
+                        <li class="pure-menu-item">
+                            <a href="/crate/{{ crate_path | safe }}/builds"
+                                class="pure-menu-link{% if active_tab == 'builds' %} pure-menu-active{% endif %}">
+                                {{ "gears" | fas }}
+                                <span class="title"> Builds</span>
+                            </a>
+                        </li>
+
+                        {# The features tab #}
+                        <li class="pure-menu-item">
+                            <a href="/crate/{{ crate_path | safe }}/features"
+                               class="pure-menu-link{% if active_tab == 'features' %} pure-menu-active{% endif %}">
+                                {{ "flag" | fas }}
+                                <span class="title">Feature flags</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            {%- if metadata.rustdoc_status -%}
+                <a href="/{{ crate_path | safe }}/{{ metadata.target_name }}/" class="doc-link">
+                    {{ "book" | fas }} Documentation
+                </a>
+            {%- endif -%}
+        </div>
+    </div>
+{% endmacro package_navigation %}

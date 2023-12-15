@@ -1,0 +1,30 @@
+// FIXME: Use modules
+@import "vars";
+
+// Info and warning notifications
+div {
+    .info {
+        font-family: $font-family-sans;
+        border-radius: 4px;
+        background-color: var(--color-background-code);
+        padding: 0.4em 1em;
+        text-align: center;
+        margin-bottom: 10px;
+
+        a {
+            color: var(--color-url);
+            text-decoration: underline;
+        }
+    }
+
+    .warning {
+        @extend .info;
+
+        background-color: var(--color-warn-background);
+        color: var(--color-warn-msg);
+    }
+}
+
+.text-center {
+    text-align: center;
+}

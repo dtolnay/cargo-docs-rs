@@ -1,0 +1,102 @@
+// Standard white theme
+html {
+  color-scheme: light;
+  --color-background-code: #f5f5f5;
+  --color-background: #fff;
+  --input-color: #000;
+  --input-box-shadow-focus: 0 0 8px #078dd8;
+  --color-border-light: #eaeaea;
+  --color-border: #ddd;
+  --color-doc-link-background: #333;
+  --color-doc-link-hover: #3061f3;
+  --color-error-hover: #be2525;
+  --color-error: #d93d3d;
+  --color-macro: #068000;
+  --color-menu-border: #cdcdcd;
+  --color-menu-header-background: #e0e0e0;
+  --color-navbar-standard: #777;
+  --color-standard: #000;
+  --color-brand: #000;
+  --color-struct: #df3600;
+  --color-type: #e57300;
+  --color-url: #4d76ae;
+  --color-warn-background: #ffe5cc;
+  --color-warn-msg: #e57300;
+  --color-warn-hover: #b25900;
+  --color-warn: #e57300;
+  --color-background-input: #fff;
+  --color-table-header-background: #e0e0e0;
+  --color-table-header: #000;
+  --color-search-focus: #078dd8;
+  --chart-title-color: #000;
+  --chart-grid: #ddd;
+}
+
+// To add a new theme, copy the above theme into a new `html[data-theme="name"]`
+// block below and change the colors
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --color-background-code: #2a2a2a;
+  --color-background: #353535;
+  --input-color: #111;
+  --input-box-shadow-focus: 0 0 8px 4px #078dd8;
+  --color-border-light: #eaeaea;
+  --color-border: #4e4e4e;
+  --color-doc-link-background: #c0c0c0;
+  --color-doc-link-hover: #3061f3;
+  --color-error-hover: #be2525;
+  --color-error: #d93d3d;
+  --color-macro: #068000;
+  --color-menu-border: #cdcdcd;
+  --color-menu-header-background: #e0e0e0;
+  --color-navbar-standard: #ddd;
+  --color-standard: #c0c0c0;
+  --color-brand: #fff;
+  --color-struct: #df3600;
+  --color-type: #e57300;
+  --color-url: #d2991d;
+  --color-warn-background: #6b3603;
+  --color-warn-msg: #d8d8d8;
+  --color-warn-hover: #b25900;
+  --color-warn: #e57300;
+  --color-background-input: #f0f0f0;
+  --color-table-header-background: #545252;
+  --color-table-header: #000;
+  --color-search-focus: #078dd8;
+  --chart-title-color: #c0c0c0;
+  --chart-grid: #4e4e4e;
+}
+
+html[data-theme="ayu"] {
+  color-scheme: dark;
+  --color-background-code: #191f26;
+  --color-background: #0f1419;
+  --input-color: #c5c5c5;
+  --input-box-shadow-focus: 0 0 0 1px #148099,0 0 0 2px transparent;
+  --color-border-light: #eaeaea;
+  --color-border: #424c57;
+  --color-doc-link-background: #d5d5d5;
+  --color-doc-link-hover: #3061f3;
+  --color-error-hover: #be2525;
+  --color-error: #d93d3d;
+  --color-macro: #068000;
+  --color-menu-border: #cdcdcd;
+  --color-menu-header-background: #e0e0e0;
+  --color-navbar-standard: #ddd;
+  --color-standard: #c5c5c5;
+  --color-brand: #fff;
+  --color-struct: #df3600;
+  --color-type: #e57300;
+  --color-url: #39afd7;
+  --color-warn-background: #804207;
+  --color-warn-msg: #d8c9b9;
+  --color-warn-hover: #b25900;
+  --color-warn: #e57300;
+  --color-background-input: #141920;
+  --color-table-header-background: #364759;
+  --color-table-header: #eee;
+  --color-search-focus: #148099;
+  --chart-title-color: #e6e6e6;
+  --chart-grid: #5c6773;
+}

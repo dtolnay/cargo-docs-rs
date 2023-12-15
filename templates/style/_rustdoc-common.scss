@@ -1,0 +1,105 @@
+// FIXME: Use modules
+@import "vars", "navbar", "themes", "fa";
+
+#clipboard {
+    cursor: pointer;
+}
+
+// Force the navbar to be left-aligned on rustdoc pages
+body.rustdoc-page > .nav-container > .container {
+    margin-left: 0;
+}
+
+div.container-rustdoc {
+    text-align: left;
+}
+
+div.container-rustdoc {
+    width: unset;
+}
+
+// this is a super nasty override for help dialog in rustdocs
+// see #52 for details
+body.blur {
+    > :not(#help) {
+        filter: none;
+        -webkit-filter: none;
+    }
+
+    > div.nav-container > *,
+    > div.docsrs-package-container > *,
+    > div.rustdoc > :not(#help) {
+        filter: blur(8px);
+        -webkit-filter: blur(8px);
+        opacity: 0.7;
+    }
+}
+
+// rustdoc overrides
+div.rustdoc {
+    $padding-x: 15px;
+    padding: 10px $padding-x 20px;
+    position: relative;
+
+    @media (max-width: 700px) {
+        padding-top: 0;
+    }
+
+    .sidebar {
+        @media (min-width: 701px) {
+            margin-top: $top-navbar-height;
+        }
+
+        .block > ul > li {
+            margin-right: -10px;
+        }
+
+        @media (max-width: 700px) {
+            margin-left: -2 * $padding-x; // offset the additional padding added by the parent containers
+            width: calc(100% + #{4 * $padding-x});
+
+            &.mobile {
+                top: $top-navbar-height;
+                margin-left: 0; // since the sidebar is now fixed position, remove the padding workaround
+                width: 100%;
+
+                .sidebar-elems.show-it {
+                    top: 45px + $top-navbar-height;
+                }
+
+                #sidebar-filler {
+                    top: $top-navbar-height;
+                }
+            }
+
+            // A later version of rustdoc uses the .sidebar.shown instead of .sidebar.mobile, and
+            // also needs a height adjustment.
+            &.shown {
+                width: 250px;
+                margin-left: 0;
+                // 45px is the size of the rustdoc mobile-topbar
+                top: 45px + $top-navbar-height !important;
+                height: calc(100vh - 45px - #{$top-navbar-height}) !important;
+            }
+        }
+    }
+
+    .mobile-topbar,
+    #source-sidebar {
+        top: $top-navbar-height;
+    }
+
+    &:focus {
+        outline: unset;
+    }
+
+    // Overriding some outdated rustdoc CSS rules
+    #results {
+        position: initial !important;
+        overflow: initial !important;
+
+        > table {
+            margin-bottom: 0 !important;
+        }
+    }
+}

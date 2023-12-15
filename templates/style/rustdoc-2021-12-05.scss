@@ -1,0 +1,29 @@
+// FIXME: Use modules
+@import "rustdoc-common";
+
+// This file is needed to overload the previous docs.rs style. It is added into crates generated
+// using rustdoc after https://github.com/rust-lang/rust/pull/91356 has been merged.
+
+#rustdoc_body_wrapper {
+    padding: 0;
+
+    .sidebar {
+        margin-top: 0;
+        top: $top-navbar-height;
+        height: calc(100vh - #{$top-navbar-height});
+        /* Since we use `overflow-wrap: anywhere;`, we never have the need for a X scrollbar... */
+        overflow-x: hidden;
+    }
+}
+
+@media (max-width: 700px) {
+    .source main {
+        height: auto;
+    }
+}
+
+@media (max-width: 464px) {
+    #sidebar-toggle {
+        top: 32px;
+    }
+}

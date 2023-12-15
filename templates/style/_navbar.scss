@@ -1,0 +1,388 @@
+// FIXME: Use modules
+@import "vars", "utils";
+
+.pure-g [class*="pure-u"] {
+    font-family: $font-family-sans;
+    color: var(--color-standard);
+}
+
+/* Body must have no padding so the topbar sticks to the top of the viewport
+   and extends to both sides of the screen.
+   Some versions of rustdoc had this style, which we need to override:
+   body { padding: 10px 15px 20px 15px; }
+*/
+body {
+    padding: 0;
+}
+
+@keyframes rotating_text {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+div.nav-container {
+    // Nothing is supposed to be over or hovering the top navbar. Maybe add a few others '('? :)
+    z-index: 999;
+    height: $top-navbar-height;
+    border-bottom: 1px solid var(--color-border);
+    background-color: var(--color-background);
+    left: 0;
+    right: 0;
+    top: 0;
+    position: sticky;
+    color: var(--color-navbar-standard);
+    /* The font size must be specified in pixels because the height is specified in pixels. */
+    font: 16px $font-family-sans;
+
+    .container, .pure-menu-horizontal {
+        position: relative;
+        height: 100%;
+    }
+
+    li {
+        border-left: 1px solid var(--color-border);
+    }
+
+    .pure-menu-has-children > .pure-menu-link {
+        background-color: var(--color-background);
+
+        &:hover {
+            background-color: var(--color-background);
+        }
+        &:after {
+            font-size: 12.8px;
+            content: "\25BC"
+        }
+    }
+
+    .pure-menu-has-children.pure-menu-active > .pure-menu-link {
+        &:after {
+            content:"\25B2";
+        }
+    }
+
+    .pure-menu-link {
+        font-size: 12.8px;
+        font-weight: 400;
+        color: var(--color-navbar-standard);
+
+        &.description {
+            font-size: 14.4px;
+        }
+
+        // Improves menu link readability when inverting the colors on focus.
+        // Vendor do background-color #eee, looks weird on different theme.
+        &:focus {
+            color: var(--color-background);
+            background-color: var(--color-doc-link-background);
+        }
+
+        &:hover {
+            color: var(--color-standard);
+            background-color: inherit;
+        }
+
+        &.crate-name {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            max-width: 200px;
+        }
+    }
+
+    form.landing-search-form-nav {
+        max-width: 1200px;
+        height: 100%;
+        display: flex;
+        flex-direction: row;
+
+        #search-input-nav {
+            max-width: 150px;
+            display: none;
+            border-left: 1px solid var(--color-border);
+            height: 100%;
+
+            @media #{$media-sm} {
+                display: block;
+            }
+
+            @media #{$media-md} {
+                max-width: 200px;
+            }
+
+            label {
+                color: var(--color-navbar-standard);
+                cursor: pointer;
+                padding-left: 0.5rem;
+                font-size: 12.8px;
+            }
+
+            input, select {
+                border: none;
+                margin: 0 1em 0 0;
+                font-size: 12.8px;
+                box-shadow: none;
+                background-color: var(--color-background);
+                height: 100%;
+            }
+        }
+
+        input.search-input-nav:focus {
+            outline: unset;
+        }
+
+       .docsrs-logo, .pure-menu-item a {
+            padding: 6.4px 16px 6.4px 16px;
+       }
+
+       .docsrs-logo, .pure-menu-item, .pure-menu-item a {
+            height: 100%;
+       }
+
+       .spacer {
+            flex-grow: 1;
+       }
+    }
+
+    .pure-menu-children {
+        --menu-x: 0;
+
+        // #{} interpolates a SassScript expression. Using this prevents
+        // SASS from using its built-in min/max over the CSS min/max functions
+        --clamped-offset: m#{i}n(var(--menu-x), calc(100vw - 100%));
+
+        border: 1px solid var(--color-border);
+        border-radius: 0 0 2px 2px;
+        background-color: var(--color-background);
+
+        top: calc(#{$top-navbar-height} - 1px);
+        left: 0;
+        position: fixed;
+        transform: translateX(m#{a}x(0%, var(--clamped-offset)));
+
+        li {
+            border-left: none;
+        }
+    }
+
+    // used for latest version warning
+    .warn,
+    .warn:hover {
+        color: var(--color-warn);
+    }
+
+    a.warn:hover {
+        color: var(--color-warn-hover);
+    }
+
+    // used for global alerts
+    .error {
+        color: var(--color-error);
+
+        &:hover {
+            color: var(--color-error-hover);
+        }
+    }
+
+    // These hardcoded values are "magic", in the sense they were observed to be the lowest-possible
+    // thresholds through experimentation with a package name that hit the max-width of the element.
+    $full-width: 1142px;
+    $medium-width: 928px;
+    $narrow-width: 872px;
+
+    // use a .title span inside a menu to hide it on small screens
+    span.title {
+        display: none;
+        @media screen and (min-width: #{$narrow-width}) {
+            display: inline;
+        }
+    }
+
+    .pure-menu-right span.title {
+        display: none;
+        @media screen and (min-width: #{$medium-width}) {
+            display: inline;
+        }
+    }
+
+     /// Generate the rules for the navbar menu item labels at various dimensions.
+     ///
+     /// @param {number} $medium-breakpoint [$medium-width] - the medium breakpoint
+     /// @param {number} $full-breakpoint [$full-width] - the full breakpoint
+     /// @param {boolean} $show-medium [true] - whether labels should be shown after the medium breakpoint
+     /// @param {boolean} $show-full [true] - whether labels should be shown after the full breakpoint
+    @mixin navbar-menu-labels(
+        $medium-breakpoint: $medium-width,
+        $full-breakpoint: $full-width,
+        $show-medium: true,
+        $show-full: true
+    ) {
+        .pure-menu-item span.title {
+            display: none;
+            @media screen and (min-width: #{$medium-breakpoint}) {
+                @if $show-medium {
+                    display: inline;
+                }
+                @else {
+                    display: none;
+                }
+            }
+        }
+        .pure-menu-right span.title {
+            display: none;
+            @media screen and (min-width: #{$full-breakpoint}) {
+                @if $show-full {
+                    display: inline;
+                }
+                @else {
+                    display: none;
+                }
+            }
+        }
+    }
+
+    form.landing-search-form-nav {
+        // These hardcoded values are "magic", in the sense they were observed to be the lowest-possible
+        // thresholds through experimentation with a package name that hit the max-width of the element,
+        // and various combinations of latest, not latest, and yanked states.
+        &.not-latest {
+            @include navbar-menu-labels(1061px, 1153px);
+        }
+
+        &.yanked {
+            @include navbar-menu-labels(1119px, $full-width, $show-full: false);
+        }
+
+        &.not-latest.yanked {
+            $medium-width: 1191px;
+
+            // Because this message is very long, steal some additional space from the search input
+            #search-input-nav {
+                @media screen and (min-width: #{$medium-width}) {
+                    max-width: 150px;
+                }
+            }
+
+            @include navbar-menu-labels($medium-width, $full-width, $show-full: false);
+        }
+    }
+
+    // Make menu item optional and disappear on small screens
+    .pure-menu-opt {
+        display: none;
+        @media #{$media-sm} {
+            display: inline-block;
+        }
+    }
+
+    // Make children of menu optional and disappear on small screens
+    .pure-menu-opt-children {
+        > .pure-menu-link::after {
+            display: none;
+            @media #{$media-sm} {
+                display: inline;
+            }
+        }
+
+        &.pure-menu-allow-hover:hover > .pure-menu-children,
+        &.pure-menu-active > .pure-menu-children {
+          display: none;
+          @media #{$media-sm} {
+              display: block;
+          }
+        }
+    }
+
+    div.package-details-menu {
+        width: 350px;
+
+        p.description {
+            font-family: $font-family-sans;
+            font-size: 12.8px;
+            color: var(--color-navbar-standard);
+            padding: 0.5em 1em;
+            margin: 0;
+        }
+
+        ul.pure-menu-list {
+            width: 100%;
+        }
+
+        div.right-border {
+            border-right: 1px solid var(--color-border);
+        }
+
+        a.pure-menu-link {
+            word-wrap: normal;
+            white-space: normal;
+        }
+
+        div.sub-menu {
+            max-height: 150px;
+            overflow-y: auto;
+
+            ul.pure-menu-list {
+                border-top: none;
+            }
+
+            li.pure-menu-item:last-child {
+                border-bottom: none;
+            }
+        }
+    }
+
+    #releases-list {
+        .rotate {
+            display: inline-block;
+            font-size: 30px;
+            animation: rotating_text 2s linear infinite;
+        }
+    }
+
+    #platforms {
+        max-height: 75vh;
+        overflow-y: auto;
+
+        li a {
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+
+            &.current {
+                font-weight: bold;
+
+                &::before {
+                    content: "•";
+                    position: absolute;
+                    margin-left: -10px;
+                }
+            }
+        }
+    }
+}
+
+#nav-search, #nav-sort {
+    color: var(--color-navbar-standard);
+}
+
+html {
+    // Offset anchor jump targets down by this much, so they don't
+    // overlap the top navigation bar (not supported on Desktop/Mobile
+    // Safari yet):
+    scroll-padding-top: $top-navbar-height;
+}
+
+.menu-item-divided {
+    border-bottom: 1px solid var(--color-border);
+}
+
+.pure-menu-list > li.pure-menu-heading {
+    color: var(--color-standard);
+}
+
+i.dependencies.normal {
+    visibility: hidden;
+    display: none;
+}
