@@ -22,6 +22,7 @@ use cargo_metadata::MetadataCommand;
 use log::info;
 
 pub mod context;
+#[allow(clippy::module_inception)]
 pub mod docs_rs;
 pub mod generated_code;
 
@@ -113,37 +114,101 @@ async fn routes(context: Context) -> Result<()> {
     //   https://support.google.com/webmasters/answer/183668?hl=en
 
     // static files
-    context.storage.store_one(
-        "robots.txt".into(),
-        include_str!("../../docs.rs/static/robots.txt").into(),
-    )?;
-    context.storage.store_one(
-        "favicon.ico".into(),
-        include_bytes!("../../docs.rs/static/favicon.ico").into(),
-    )?;
-    for (path, content) in generated_code::raw_static() {
-        context.storage.store_one("-/static".parse::<PathBuf>().unwrap().join(path), content.into())?;
+    {
+        context.storage.store_one(
+            "robots.txt".into(),
+            include_str!("../../docs.rs/static/robots.txt").into(),
+        )?;
+        context.storage.store_one(
+            "favicon.ico".into(),
+            include_bytes!("../../docs.rs/static/favicon.ico").into(),
+        )?;
+        context.storage.store_one(
+            "opensearch.xml".into(),
+            include_str!("../../docs.rs/static/opensearch.xml").into(),
+        )?;
+        for (path, content) in generated_code::raw_static() {
+            context.storage.store_one(
+                "-/static".parse::<PathBuf>().unwrap().join(path),
+                content.into(),
+            )?;
+        }
+        context.storage.store_one(
+            "-/static/rustdoc-2021-12-05.css".into(),
+            include_str!(concat!(env!("OUT_DIR"), "/rustdoc-2021-12-05.css")).into(),
+        )?;
+        context.storage.store_one(
+            "-/static/rustdoc.css".into(),
+            include_str!(concat!(env!("OUT_DIR"), "/rustdoc.css")).into(),
+        )?;
+        context.storage.store_one(
+            "-/static/style.css".into(),
+            include_str!(concat!(env!("OUT_DIR"), "/style.css")).into(),
+        )?;
+        context.storage.store_one(
+            "-/static/vendored.css".into(),
+            include_str!(concat!(env!("OUT_DIR"), "/vendored.css")).into(),
+        )?;
     }
-    context.storage.store_one(
-        "-/static/rustdoc-2021-12-05.css".into(),
-        include_str!(concat!(env!("OUT_DIR"), "/rustdoc-2021-12-05.css")).into(),
-    )?;
-    context.storage.store_one(
-        "-/static/rustdoc.css".into(),
-        include_str!(concat!(env!("OUT_DIR"), "/rustdoc.css")).into(),
-    )?;
-    context.storage.store_one(
-        "-/static/style.css".into(),
-        include_str!(concat!(env!("OUT_DIR"), "/style.css")).into(),
-    )?;
-    context.storage.store_one(
-        "-/static/vendored.css".into(),
-        include_str!(concat!(env!("OUT_DIR"), "/vendored.css")).into(),
-    )?;
+
+    // "/sitemap.xml"
+    // TODO generate sitemap.xml
+
+    // "/-/sitemap/:letter/sitemap.xml"
+    // TODO generate sitemap.xml
+
+    // "/about/builds"
+    // TODO generate builds.html
+
+    // "/about/metrics/instance"
+    // TODO generate instance.html
+
+    // "/about/metrics/service"
+    // TODO generate service.html
+
+    // "/about/metrics"
+    // TODO generate metrics.html
+
+    // "/about"
+    // TODO generate about.html
+
+    // "about/:subpage"
+    // TODO generate subpage.html
+
+    // "/"
+    // TODO generate index.html
+
+    // "/releases"
+    // TODO generate releases.html
+
+    // "/releases/recent/:page"
+    // TODO generate page.html
+
+    // "/releases/stars"
+    // TODO generate stars.html
+
+    // "/releases/stars/:page"
+    // TODO generate page.html
+
+    // "/releases/recent-failures"
+    // TODO generate recent-failures.html
+
+    // "/releases/recent-failures/:page"
+    // TODO generate page.html
+
+    // "/releases/failures"
+    // TODO generate failures.html
+
+    // "/releases/failures/:page"
+    // TODO generate page.html
 
     // "/crate/:name"
     {
-        let url: PathBuf = format!("crate/{}/index.html", context.package.name).parse()?;
+        let url: PathBuf = format!(
+            "crate/{}/{}.html",
+            context.package.name, context.package.version
+        )
+        .parse()?;
         let page = crate_details_handler(
             CrateDetailHandlerParams {
                 name: context.package.name.clone(),
@@ -152,8 +217,142 @@ async fn routes(context: Context) -> Result<()> {
             context.clone(),
         )
         .await?;
+        context.storage.store_one(url, page.clone().into())?;
+        let url: PathBuf = format!("crate/{}/latest.html", context.package.name).parse()?;
         context.storage.store_one(url, page.into())?;
     }
+
+    // "/crate/:name/:version"
+    // TODO generate version.html
+
+    // "/releases/feed"
+    // TODO generate feed.xml
+
+    // "/releases/:owner"
+    // TODO generate owner.html
+
+    // "/releases/:owner/:page"
+    // TODO generate page.html
+
+    // "/releases/activity"
+    // TODO generate activity.html
+
+    // "/releases/search"
+    // TODO generate search.html
+
+    // "/releases/queue"
+    // TODO generate queue.html
+
+    // "/crate/:name/:version/builds"
+    // TODO generate builds.html
+
+    // "/crate/:name/:version/builds.json"
+    // TODO generate builds.json
+
+    // "/crate/:name/:version/status.json"
+    // TODO generate status.json
+
+    // "/crate/:name/:version/builds/:id"
+    // TODO generate build.html
+
+    // "/crate/:name/:version/features"
+    // TODO generate features.html
+
+    // "/crate/:name/:version/source/"
+    // TODO generate source.html
+
+    // "/crate/:name/:version/source/*path"
+    // TODO generate source.html
+
+    // "/crate/:name/:version/menus/platforms/crate/"
+    // TODO generate crate.html
+
+    // "/crate/:name/:version/menus/platforms/crate/features"
+    // TODO generate features.html
+
+    // "/crate/:name/:version/menus/platforms/crate/builds"
+    // TODO generate builds.html
+
+    // "/crate/:name/:version/menus/platforms/crate/builds/*path"
+    // TODO generate builds.html
+
+    // "/crate/:name/:version/menus/platforms/crate/source/"
+    // TODO generate source.html
+
+    // "/crate/:name/:version/menus/platforms/crate/source/*path"
+    // TODO generate source.html
+
+    // "/crate/:name/:version/menus/platforms/:target"
+    // TODO generate target.html
+
+    // "/crate/:name/:version/menus/platforms/:target/*path"
+    // TODO generate target.html
+
+    // "/crate/:name/:version/menus/platforms/"
+    // TODO generate platforms.html
+
+    // "/crate/:name/:version/menus/platforms/:target/"
+    // TODO generate target.html
+
+    // "/crate/:name/:version/menus/releases/:target"
+    // TODO generate target.html
+
+    // "/crate/:name/:version/menus/releases/:target/*path"
+    // TODO generate target.html
+
+    // "/crate/:name/:version/menus/releases"
+    // TODO generate releases.html
+
+    // "/crate/:name/:version/menus/releases/:target/"
+    // TODO generate target.html
+
+    // "/-/rustdoc.static/*path"
+    // TODO generate rustdoc.static.html
+
+    // "/-/storage-change-detection.html"
+    // TODO generate storage-change-detection.html
+
+    // "/crate/:name/:version/download"
+    // TODO generate download.html
+
+    // "/crate/:name/:version/target-redirect/*path"
+    // TODO generate target-redirect.html
+
+    // "/:name/badge.svg"
+    // TODO generate badge.svg
+
+    // "/:name"
+    // TODO generate name.html
+
+    // "/:name/"
+    // TODO generate index.html
+
+    // "/:name/:version"
+    // TODO generate version.html
+
+    // "/:name/:version/"
+    // TODO generate index.html
+
+    // "/:name/:version/all.html"
+    // TODO generate all.html
+
+    // "/:name/:version/help.html"
+    // TODO generate help.html
+
+    // "/:name/:version/settings.html"
+    // TODO generate settings.html
+
+    // "/:name/:version/scrape-examples-help.html"
+    // TODO generate scrape-examples-help.html
+
+    // "/:name/:version/:target"
+    // TODO generate target.html
+
+    // "/:name/:version/:target/"
+    // TODO generate index.html
+
+    // "/:name/:version/:target/*path"
+    // TODO generate target.html
 
     Ok(())
 }

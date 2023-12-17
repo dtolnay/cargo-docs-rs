@@ -120,7 +120,7 @@ impl CrateDetails {
                 .default_target
                 .clone()
                 .unwrap_or(String::from("x86_64-unknown-linux-gnu")),
-            doc_targets: options.targets.clone().unwrap_or(Vec::new()),
+            doc_targets: options.targets.clone().unwrap_or_default(),
             yanked: false,
             rustdoc_css_file: get_correct_docsrs_style_file(&ctx.rustc_version)?,
         };
@@ -151,7 +151,7 @@ impl CrateDetails {
                     })
                     .collect::<Value>(),
             ),
-            readme: pkg.readme.clone().map(|readme| String::from(readme)),
+            readme: pkg.readme.clone().map(String::from),
             rustdoc: pkg.description.clone(),
             release_time: Utc::now(),
             build_status: false,
@@ -165,7 +165,7 @@ impl CrateDetails {
                 pkg.keywords
                     .clone()
                     .into_iter()
-                    .map(|keywords| serde_json::Value::from(keywords))
+                    .map(serde_json::Value::from)
                     .collect(),
             ),
             have_examples: false,          // TODO: check this manually
@@ -564,7 +564,7 @@ pub(crate) async fn get_all_platforms_inner(
 
     // let releases = releases_for_crate(&mut conn, krate.id).await?;
 
-    let doc_targets = ctx.doc.targets.clone().unwrap_or(Vec::new());
+    let doc_targets = ctx.doc.targets.clone().unwrap_or_default();
 
     // let latest_release = releases
     //     .iter()
@@ -614,13 +614,13 @@ pub(crate) async fn get_all_platforms_inner(
         },
         inner_path,
         use_direct_platform_links: is_crate_root,
-        current_target: ctx.doc.default_target.clone().unwrap_or(String::new()),
+        current_target: ctx.doc.default_target.clone().unwrap_or_default(),
     };
 
     let render = TemplateRender {
         template: String::from("rustdoc/platforms.html"),
         context: {
-            let mut context = tera::Context::from_serialize(&res)?;
+            let mut context = tera::Context::from_serialize(res)?;
             context.insert("max_targets", &ctx.max_targets);
             context
         },

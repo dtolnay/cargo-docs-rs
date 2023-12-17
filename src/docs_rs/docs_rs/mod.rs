@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 // https://github.com/rust-lang/docs.rs/blob/2f67be0ed1f3c8d84d2a6c48b7d102598090d864/src/web/mod.rs
 pub mod config;
 pub mod index;

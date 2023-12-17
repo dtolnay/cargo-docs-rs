@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 use anyhow::{anyhow, Context, Result};
 use chrono::{DateTime, Utc};
 use reqwest::header::{HeaderValue, ACCEPT, USER_AGENT};
