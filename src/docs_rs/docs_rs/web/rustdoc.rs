@@ -3,9 +3,10 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use tracing::{instrument, trace};
+use log::trace;
+use serde::Deserialize;
 
-pub fn generate_rust_rs_docs(url: String, dir: PathBuf) -> Result<String> {
+pub fn generate_rust_rs_docs(url: String, dir: PathBuf) -> Result<()> {
     // since we directly use the Uri-path and not the extracted params from the router,
     // we have to percent-decode the string here.
     let original_path = percent_encoding::percent_decode(url.as_bytes())
@@ -123,14 +124,13 @@ pub fn generate_rust_rs_docs(url: String, dir: PathBuf) -> Result<String> {
         req_path.push("index.html");
     }
 
-    trace!(?storage_path, ?req_path, "try fetching from storage");
+    trace!("{:?} {:?} fetch from storage", storage_path, req_path);
 
     // record the data-fetch step
     // until we re-add it below inside `fetch_rustdoc_file`
     // rendering_time.step("fetch from storage");
 
     // Attempt to load the file from the database
-    // let blob =
     // let blob = match storage
     //     .fetch_rustdoc_file(
     //         &params.name,
@@ -199,5 +199,64 @@ pub fn generate_rust_rs_docs(url: String, dir: PathBuf) -> Result<String> {
     //     }
     // };
 
-    Ok("".into())
+    // Serve non-html files directly
+    if !storage_path.ends_with(".html") {
+        trace!("{:?}", storage_path);
+        // rendering_time.step("serve asset");
+
+        // default asset caching behaviour is `Cache::ForeverInCdnAndBrowser`.
+        // This is an edge-case when we serve invocation specific static assets under `/latest/`:
+        // https://github.com/rust-lang/docs.rs/issues/1593
+        // return Ok(File(blob).into_response());
+        return Err(anyhow::anyhow!("serve asset"));
+    }
+
+    // rendering_time.step("find latest path");
+
+    // let latest_release = krate.latest_release();
+
+    // Get the latest version of the crate
+    // let latest_version = latest_release.version.to_string();
+    // let is_latest_version = latest_version == version;
+    // let is_prerelease = !(semver::Version::parse(&version)
+    //     .with_context(|| {
+    //         format!(
+    //             "invalid semver in database for crate {}: {}",
+    //             params.name, &version
+    //         )
+    //     })?
+    //     .pre
+    //     .is_empty());
+
+    // The path within this crate version's rustdoc output
+    //   let (target, inner_path) = {
+    //     let mut inner_path = req_path.clone();
+
+    //     let target = if inner_path.len() > 1
+    //         && krate
+    //             .metadata
+    //             .doc_targets
+    //             .iter()
+    //             .any(|s| s == inner_path[0])
+    //     {
+    //         inner_path.remove(0)
+    //     } else {
+    //         ""
+    //     };
+
+    //     (target, inner_path.join("/"))
+    // };
+
+    Ok(())
+}
+
+#[derive(Clone, Deserialize, Debug)]
+pub(crate) struct RustdocHtmlParams {
+    pub(crate) name: String,
+    pub(crate) version: String,
+    // both target and path are only used for matching the route.
+    // The actual path is read from the request `Uri` because
+    // we have some static filenames directly in the routes.
+    pub(crate) target: Option<String>,
+    pub(crate) path: Option<String>,
 }

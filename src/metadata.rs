@@ -33,7 +33,7 @@ pub struct Resolve {
     pub root: Option<PackageId>,
 }
 
-#[derive(Deserialize, Debug, Default)]
+#[derive(Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "kebab-case")]
 pub struct DocumentationOptions {
     #[serde(default)]

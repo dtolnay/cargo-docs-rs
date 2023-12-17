@@ -4,13 +4,17 @@
     clippy::uninlined_format_args
 )]
 
+mod docs_rs;
 mod metadata;
 mod parser;
 
-use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
 use clap::{CommandFactory as _, Parser as _};
+use docs_rs::generate_static_servers;
+use env_logger as logger;
+use log::trace;
+use metadata::{DocumentationOptions, Metadata};
 use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
@@ -55,11 +59,15 @@ fn do_main() -> Result<()> {
         let metadata_map: Map<String, serde_json::Value> =
             serde_json::from_slice(&output.stdout)
                 .context("Failed to parse output of `cargo metadata`")?;
-        metadata_map["target_directory"]
-            .as_str()
-            .unwrap()
-            .parse()?
+        metadata_map["target_directory"].as_str().unwrap().parse()?
     };
+
+    // tracingを使うときは、cargo docs-rs --verboseを実行する
+    #[cfg(feature = "accessory")]
+    if args.verbose {
+        env::set_var("RUST_LOG", "TRACE");
+        logger::init();
+    }
 
     let mut packages = Map::new();
     for pkg in metadata.packages {
@@ -68,21 +76,23 @@ fn do_main() -> Result<()> {
 
     let default_documentation_options = DocumentationOptions::default();
     let mut proc_macro = false;
-    let metadata = if let Some(package) = &args.package {
+    let (metadata, pkg_name) = if let Some(package) = &args.package {
         let mut package_metadata = &default_documentation_options;
+        let mut pkg_name = String::new();
         for workspace_member in &metadata.workspace_members {
             if packages[workspace_member].name == *package {
                 let package = &packages[workspace_member];
                 proc_macro = package.is_proc_macro();
                 package_metadata = &package.metadata;
+                pkg_name = package.name.clone();
                 break;
             }
         }
-        package_metadata
+        (package_metadata, pkg_name)
     } else if let Some(root) = metadata.resolve.root {
         let package = &packages[&root];
         proc_macro = package.is_proc_macro();
-        &package.metadata
+        (&package.metadata, package.name.clone())
     } else {
         let mut options = String::new();
         for (i, member) in metadata.workspace_members.iter().enumerate() {
@@ -246,6 +256,11 @@ fn do_main() -> Result<()> {
     let status = cargo_rustdoc.status()?;
     if !status.success() {
         process::exit(status.code().unwrap_or(1));
+    }
+
+    #[cfg(feature = "accessory")]
+    if args.accessory {
+        generate_static_servers(target_directory, pkg_name, metadata.clone(), 10)?;
     }
 
     Ok(())

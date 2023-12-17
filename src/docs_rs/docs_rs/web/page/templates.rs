@@ -3,12 +3,16 @@
 use anyhow::Context;
 use anyhow::Result;
 use chrono::{DateTime, Utc};
+use log::trace;
 use serde_json::Value;
 use std::{collections::HashMap, fmt};
 use tera::{Result as TeraResult, Tera};
-use tracing::trace;
 
-use super::highlight;
+use crate::docs_rs::docs_rs::web::duration_to_str;
+use crate::docs_rs::BUILD_VERSION;
+use crate::docs_rs::GLOBAL_ALERT;
+
+use super::super::highlight;
 
 pub const TEMPLATES_DIRECTORY: &str = "templates";
 
@@ -44,23 +48,23 @@ fn load_templates() -> Result<Tera> {
     //
     // TODO: remove this when https://github.com/Gilnaa/globwalk/issues/29 is fixed
     let mut tera = Tera::default();
-    let template_raws = crate::page::generated_code::raw_templates();
+    let template_raws = crate::docs_rs::generated_code::raw_templates();
     tera.add_raw_templates(template_raws).with_context(|| {
         format!("failed while loading tera templates in {TEMPLATES_DIRECTORY:?}")
     })?;
 
     // // This function will return any global alert, if present.
-    // ReturnValue::add_function_to(
-    //     &mut tera,
-    //     "global_alert",
-    //     serde_json::to_value(crate::GLOBAL_ALERT)?,
-    // );
-    // // This function will return the current version of docs.rs.
-    // ReturnValue::add_function_to(
-    //     &mut tera,
-    //     "docsrs_version",
-    //     Value::String(crate::BUILD_VERSION.into()),
-    // );
+    ReturnValue::add_function_to(
+        &mut tera,
+        "global_alert",
+        serde_json::to_value(GLOBAL_ALERT)?,
+    );
+    // This function will return the current version of docs.rs.
+    ReturnValue::add_function_to(
+        &mut tera,
+        "docsrs_version",
+        Value::String(BUILD_VERSION.into()),
+    );
 
     // Custom filters
     tera.register_filter("timeformat", timeformat);
@@ -102,7 +106,7 @@ fn timeformat(value: &Value, args: &HashMap<String, Value>) -> TeraResult<Value>
             .unwrap()
             .with_timezone(&Utc);
 
-        super::duration_to_str(value)
+        duration_to_str(value)
     } else {
         const TIMES: &[&str] = &["seconds", "minutes", "hours"];
 

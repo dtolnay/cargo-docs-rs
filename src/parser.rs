@@ -4,6 +4,8 @@ use std::path::PathBuf;
 const PACKAGE_SELECTION: &str = "Package Selection";
 const COMPILATION_OPTIONS: &str = "Compilation Options";
 const MANIFEST_OPTIONS: &str = "Manifest Options";
+#[cfg(feature = "accessory")]
+const DOCS_RS_OPTIONS: &str = "docs.rs Options";
 
 #[derive(Parser)]
 #[command(bin_name = "cargo", version, author, disable_help_subcommand = true)]
@@ -58,6 +60,11 @@ pub struct Doc {
     /// Run without accessing the network
     #[arg(long, help_heading = MANIFEST_OPTIONS)]
     pub offline: bool,
+
+    #[cfg(feature = "accessory")]
+    /// Use Accessory
+    #[arg(long, help_heading = DOCS_RS_OPTIONS)]
+    pub accessory: bool,
 }
 
 #[derive(ValueEnum, Debug, Clone, Copy)]

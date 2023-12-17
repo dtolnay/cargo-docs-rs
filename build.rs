@@ -7,8 +7,9 @@ cfg_if::cfg_if! {
     use anyhow::{Context as _, Result};
     use std::{env, path::Path};
     use crate::{
-        style::{compile_sass, compile_syntax},
-        templates::generate_include_str_templates_code,
+      git_version::write_git_version,
+      style::{compile_sass, compile_syntax},
+      templates::generate_include_str_templates_code,
     };
   } else {
     use anyhow::Result;
@@ -20,6 +21,8 @@ fn main() -> Result<()> {
     {
         let out_dir = env::var("OUT_DIR").context("missing OUT_DIR")?;
         let out_dir = Path::new(&out_dir);
+
+        write_git_version(out_dir)?;
 
         compile_sass(out_dir)?;
 
@@ -83,9 +86,49 @@ mod templates {
         }
         code.push_str("  ]\n");
         code.push_str("}\n");
-        std::fs::write("src/page/generated_code.rs", code).unwrap();
+        std::fs::write("src/docs_rs/generated_code.rs", code).unwrap();
 
         Ok(())
+    }
+}
+
+#[cfg(feature = "accessory")]
+mod git_version {
+    use anyhow::Result;
+    use std::{env, path::Path};
+
+    use crate::tracked;
+
+    pub fn write_git_version(out_dir: &Path) -> Result<()> {
+        let maybe_hash = get_git_hash()?;
+        let git_hash = maybe_hash.as_deref().unwrap_or("???????");
+
+        let build_date = time::OffsetDateTime::now_utc().date();
+
+        std::fs::write(
+            out_dir.join("git_version"),
+            format!("({git_hash} {build_date})"),
+        )?;
+
+        Ok(())
+    }
+
+    fn get_git_hash() -> Result<Option<String>> {
+        match gix::open_opts(env::current_dir()?, gix::open::Options::isolated()) {
+            Ok(repo) => {
+                let head_id = repo.head()?.id();
+
+                // TODO: are these right?
+                tracked::track(".git/HEAD")?;
+                tracked::track(".git/index")?;
+
+                Ok(head_id.map(|h| format!("{}", h.shorten_or_id())))
+            }
+            Err(err) => {
+                eprintln!("failed to get git repo: {err}");
+                Ok(None)
+            }
+        }
     }
 }
 

@@ -1,4 +1,4 @@
-pub mod metadata;
 #[cfg(feature = "accessory")]
-pub mod page;
-pub mod parser;
+mod docs_rs;
+mod metadata;
+mod parser;
