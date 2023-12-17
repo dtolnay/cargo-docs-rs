@@ -14,6 +14,7 @@ use clap::{CommandFactory as _, Parser as _};
 use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
+use std::path::PathBuf;
 use std::process::{self, Command, Stdio};
 
 cargo_subcommand_metadata::description!("Imitate the documentation build that docs.rs would do");
@@ -48,6 +49,17 @@ fn do_main() -> Result<()> {
 
     let metadata: Metadata = serde_json::from_slice(&output.stdout)
         .context("Failed to parse output of `cargo metadata`")?;
+
+    #[cfg(feature = "accessory")]
+    let target_directory: PathBuf = {
+        let metadata_map: Map<String, serde_json::Value> =
+            serde_json::from_slice(&output.stdout)
+                .context("Failed to parse output of `cargo metadata`")?;
+        metadata_map["target_directory"]
+            .as_str()
+            .unwrap()
+            .parse()?
+    };
 
     let mut packages = Map::new();
     for pkg in metadata.packages {
