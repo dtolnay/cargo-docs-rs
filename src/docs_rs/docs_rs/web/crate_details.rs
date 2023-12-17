@@ -137,15 +137,7 @@ impl CrateDetails {
                     .map(|x| {
                         Value::Array(vec![
                             Value::String(x.name.clone()),
-                            Value::String(
-                                ctx.metadata
-                                    .packages
-                                    .iter()
-                                    .find(|p| p.name == x.name)
-                                    .unwrap()
-                                    .version
-                                    .to_string(),
-                            ),
+                            Value::String(x.req.to_string()),
                             Value::String(x.kind.to_string()),
                         ])
                     })
