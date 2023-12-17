@@ -3,13 +3,14 @@
 cfg_if::cfg_if! {
   if #[cfg(feature = "accessory")] {
     const TEMPLATES_DIRECTORY: &str = "docs.rs/templates";
+    const STATIC_DIRECTORY: &str = "docs.rs/static";
 
     use anyhow::{Context as _, Result};
     use std::{env, path::Path};
     use crate::{
       git_version::write_git_version,
       style::{compile_sass, compile_syntax},
-      templates::generate_include_str_templates_code,
+      templates::generate_code,
     };
   } else {
     use anyhow::Result;
@@ -28,7 +29,7 @@ fn main() -> Result<()> {
 
         compile_syntax(out_dir).context("could not compile syntax files")?;
 
-        generate_include_str_templates_code()?;
+        generate_code()?;
 
         println!("cargo:rerun-if-changed=build.rs");
     }
@@ -43,7 +44,7 @@ mod templates {
     use path_slash::PathExt;
     use walkdir::WalkDir;
 
-    use crate::TEMPLATES_DIRECTORY;
+    use crate::{STATIC_DIRECTORY, TEMPLATES_DIRECTORY};
 
     use anyhow::Result;
 
@@ -62,7 +63,7 @@ mod templates {
             // Strip the root directory from the path and use it as the template name.
             let name = path.to_slash().expect("failed to normalize template path");
 
-            let joined_path = Path::new("../../").join(TEMPLATES_DIRECTORY).join(path);
+            let joined_path = Path::new("../../").join(base).join(path);
             let path = joined_path
                 .to_slash()
                 .expect("failed to normalize template path");
@@ -73,7 +74,17 @@ mod templates {
         files
     }
 
-    pub fn generate_include_str_templates_code() -> Result<()> {
+    pub fn generate_code() -> Result<()> {
+        let mut code = String::new();
+        code.push_str(&generate_include_str_templates_code()?);
+        code.push_str(&generate_include_str_static_code()?);
+
+        std::fs::write("src/docs_rs/generated_code.rs", code)?;
+
+        Ok(())
+    }
+
+    fn generate_include_str_templates_code() -> Result<String> {
         let files = find_templates_in_filesystem(TEMPLATES_DIRECTORY);
         let mut code = String::new();
         code.push_str("pub fn raw_templates() -> Vec<(&'static str, &'static str)> {\n");
@@ -86,9 +97,23 @@ mod templates {
         }
         code.push_str("  ]\n");
         code.push_str("}\n");
-        std::fs::write("src/docs_rs/generated_code.rs", code).unwrap();
+        Ok(code)
+    }
 
-        Ok(())
+    fn generate_include_str_static_code() -> Result<String> {
+        let files = find_templates_in_filesystem(STATIC_DIRECTORY);
+        let mut code = String::new();
+        code.push_str("pub fn raw_static() -> Vec<(&'static str, &'static [u8])> {\n");
+        code.push_str("  vec![\n");
+        for (path, name) in files {
+            code.push_str(&format!(
+                "    (\"{}\", include_bytes!(\"{}\")),\n",
+                name, path
+            ));
+        }
+        code.push_str("  ]\n");
+        code.push_str("}\n");
+        Ok(code)
     }
 }
 

@@ -2,9 +2,7 @@
 
 use std::{path::PathBuf, process::Command, sync::Arc};
 
-use crate::{
-    docs_rs::docs_rs::utils::rustc_version::parse_rustc_version, metadata::DocumentationOptions,
-};
+use crate::metadata::DocumentationOptions;
 
 use self::{
     context::Context,
@@ -22,8 +20,6 @@ use self::{
 use anyhow::Result;
 use cargo_metadata::MetadataCommand;
 use log::info;
-use semver::Version;
-use url::Url;
 
 pub mod context;
 pub mod docs_rs;
@@ -118,6 +114,17 @@ async fn routes(context: Context) -> Result<()> {
 
     // static files
     context.storage.store_one(
+        "robots.txt".into(),
+        include_str!("../../docs.rs/static/robots.txt").into(),
+    )?;
+    context.storage.store_one(
+        "favicon.ico".into(),
+        include_bytes!("../../docs.rs/static/favicon.ico").into(),
+    )?;
+    for (path, content) in generated_code::raw_static() {
+        context.storage.store_one("-/static".parse::<PathBuf>().unwrap().join(path), content.into())?;
+    }
+    context.storage.store_one(
         "-/static/rustdoc-2021-12-05.css".into(),
         include_str!(concat!(env!("OUT_DIR"), "/rustdoc-2021-12-05.css")).into(),
     )?;
@@ -145,7 +152,7 @@ async fn routes(context: Context) -> Result<()> {
             context.clone(),
         )
         .await?;
-        context.storage.store_one(url, page)?;
+        context.storage.store_one(url, page.into())?;
     }
 
     Ok(())

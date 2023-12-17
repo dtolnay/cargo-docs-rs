@@ -124,7 +124,7 @@ impl Storage {
     //     Ok(blob)
     // }
 
-    pub(crate) fn store_one(&self, path: PathBuf, page: String) -> Result<()> {
+    pub(crate) fn store_one(&self, path: PathBuf, page: Vec<u8>) -> Result<()> {
         let docs_path = Path::new("./docs");
         if !docs_path.exists() {
             fs::create_dir(docs_path).expect("Failed to create docs directory");

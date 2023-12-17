@@ -1,201 +1,85 @@
 pub fn raw_templates() -> Vec<(&'static str, &'static str)> {
-    vec![
-        (
-            "about-base.html",
-            include_str!("../../docs.rs/templates/about-base.html"),
-        ),
-        (
-            "base.html",
-            include_str!("../../docs.rs/templates/base.html"),
-        ),
-        (
-            "clipboard.svg",
-            include_str!("../../docs.rs/templates/clipboard.svg"),
-        ),
-        (
-            "core/about/badges.html",
-            include_str!("../../docs.rs/templates/core/about/badges.html"),
-        ),
-        (
-            "core/about/builds.html",
-            include_str!("../../docs.rs/templates/core/about/builds.html"),
-        ),
-        (
-            "core/about/download.html",
-            include_str!("../../docs.rs/templates/core/about/download.html"),
-        ),
-        (
-            "core/about/index.html",
-            include_str!("../../docs.rs/templates/core/about/index.html"),
-        ),
-        (
-            "core/about/metadata.html",
-            include_str!("../../docs.rs/templates/core/about/metadata.html"),
-        ),
-        (
-            "core/about/redirections.html",
-            include_str!("../../docs.rs/templates/core/about/redirections.html"),
-        ),
-        (
-            "core/Cargo.toml.example",
-            include_str!("../../docs.rs/templates/core/Cargo.toml.example"),
-        ),
-        (
-            "core/home.html",
-            include_str!("../../docs.rs/templates/core/home.html"),
-        ),
-        (
-            "core/sitemap.xml",
-            include_str!("../../docs.rs/templates/core/sitemap.xml"),
-        ),
-        (
-            "core/sitemapindex.xml",
-            include_str!("../../docs.rs/templates/core/sitemapindex.xml"),
-        ),
-        (
-            "crate/builds.html",
-            include_str!("../../docs.rs/templates/crate/builds.html"),
-        ),
-        (
-            "crate/build_details.html",
-            include_str!("../../docs.rs/templates/crate/build_details.html"),
-        ),
-        (
-            "crate/details.html",
-            include_str!("../../docs.rs/templates/crate/details.html"),
-        ),
-        (
-            "crate/features.html",
-            include_str!("../../docs.rs/templates/crate/features.html"),
-        ),
-        (
-            "crate/source.html",
-            include_str!("../../docs.rs/templates/crate/source.html"),
-        ),
-        (
-            "error.html",
-            include_str!("../../docs.rs/templates/error.html"),
-        ),
-        (
-            "header/global_alert.html",
-            include_str!("../../docs.rs/templates/header/global_alert.html"),
-        ),
-        (
-            "header/package_navigation.html",
-            include_str!("../../docs.rs/templates/header/package_navigation.html"),
-        ),
-        (
-            "header/topbar.html",
-            include_str!("../../docs.rs/templates/header/topbar.html"),
-        ),
-        (
-            "header/topbar_begin.html",
-            include_str!("../../docs.rs/templates/header/topbar_begin.html"),
-        ),
-        (
-            "header/topbar_end.html",
-            include_str!("../../docs.rs/templates/header/topbar_end.html"),
-        ),
-        (
-            "macros.html",
-            include_str!("../../docs.rs/templates/macros.html"),
-        ),
-        (
-            "releases/activity.html",
-            include_str!("../../docs.rs/templates/releases/activity.html"),
-        ),
-        (
-            "releases/build_queue.html",
-            include_str!("../../docs.rs/templates/releases/build_queue.html"),
-        ),
-        (
-            "releases/feed.xml",
-            include_str!("../../docs.rs/templates/releases/feed.xml"),
-        ),
-        (
-            "releases/header.html",
-            include_str!("../../docs.rs/templates/releases/header.html"),
-        ),
-        (
-            "releases/releases.html",
-            include_str!("../../docs.rs/templates/releases/releases.html"),
-        ),
-        (
-            "releases/search_results.html",
-            include_str!("../../docs.rs/templates/releases/search_results.html"),
-        ),
-        (
-            "rustdoc/body.html",
-            include_str!("../../docs.rs/templates/rustdoc/body.html"),
-        ),
-        (
-            "rustdoc/head.html",
-            include_str!("../../docs.rs/templates/rustdoc/head.html"),
-        ),
-        (
-            "rustdoc/platforms.html",
-            include_str!("../../docs.rs/templates/rustdoc/platforms.html"),
-        ),
-        (
-            "rustdoc/releases.html",
-            include_str!("../../docs.rs/templates/rustdoc/releases.html"),
-        ),
-        (
-            "rustdoc/topbar.html",
-            include_str!("../../docs.rs/templates/rustdoc/topbar.html"),
-        ),
-        (
-            "rustdoc/vendored.html",
-            include_str!("../../docs.rs/templates/rustdoc/vendored.html"),
-        ),
-        (
-            "storage-change-detection.html",
-            include_str!("../../docs.rs/templates/storage-change-detection.html"),
-        ),
-        (
-            "style/rustdoc-2021-12-05.scss",
-            include_str!("../../docs.rs/templates/style/rustdoc-2021-12-05.scss"),
-        ),
-        (
-            "style/rustdoc.scss",
-            include_str!("../../docs.rs/templates/style/rustdoc.scss"),
-        ),
-        (
-            "style/style.scss",
-            include_str!("../../docs.rs/templates/style/style.scss"),
-        ),
-        (
-            "style/_fa.scss",
-            include_str!("../../docs.rs/templates/style/_fa.scss"),
-        ),
-        (
-            "style/_navbar.scss",
-            include_str!("../../docs.rs/templates/style/_navbar.scss"),
-        ),
-        (
-            "style/_rustdoc-common.scss",
-            include_str!("../../docs.rs/templates/style/_rustdoc-common.scss"),
-        ),
-        (
-            "style/_syntax-themes.scss",
-            include_str!("../../docs.rs/templates/style/_syntax-themes.scss"),
-        ),
-        (
-            "style/_syntax.scss",
-            include_str!("../../docs.rs/templates/style/_syntax.scss"),
-        ),
-        (
-            "style/_themes.scss",
-            include_str!("../../docs.rs/templates/style/_themes.scss"),
-        ),
-        (
-            "style/_utils.scss",
-            include_str!("../../docs.rs/templates/style/_utils.scss"),
-        ),
-        (
-            "style/_vars.scss",
-            include_str!("../../docs.rs/templates/style/_vars.scss"),
-        ),
-        ("theme.js", include_str!("../../docs.rs/templates/theme.js")),
-    ]
+  vec![
+    ("about-base.html", include_str!("../../docs.rs/templates/about-base.html")),
+    ("base.html", include_str!("../../docs.rs/templates/base.html")),
+    ("clipboard.svg", include_str!("../../docs.rs/templates/clipboard.svg")),
+    ("core/about/badges.html", include_str!("../../docs.rs/templates/core/about/badges.html")),
+    ("core/about/builds.html", include_str!("../../docs.rs/templates/core/about/builds.html")),
+    ("core/about/download.html", include_str!("../../docs.rs/templates/core/about/download.html")),
+    ("core/about/index.html", include_str!("../../docs.rs/templates/core/about/index.html")),
+    ("core/about/metadata.html", include_str!("../../docs.rs/templates/core/about/metadata.html")),
+    ("core/about/redirections.html", include_str!("../../docs.rs/templates/core/about/redirections.html")),
+    ("core/Cargo.toml.example", include_str!("../../docs.rs/templates/core/Cargo.toml.example")),
+    ("core/home.html", include_str!("../../docs.rs/templates/core/home.html")),
+    ("core/sitemap.xml", include_str!("../../docs.rs/templates/core/sitemap.xml")),
+    ("core/sitemapindex.xml", include_str!("../../docs.rs/templates/core/sitemapindex.xml")),
+    ("crate/builds.html", include_str!("../../docs.rs/templates/crate/builds.html")),
+    ("crate/build_details.html", include_str!("../../docs.rs/templates/crate/build_details.html")),
+    ("crate/details.html", include_str!("../../docs.rs/templates/crate/details.html")),
+    ("crate/features.html", include_str!("../../docs.rs/templates/crate/features.html")),
+    ("crate/source.html", include_str!("../../docs.rs/templates/crate/source.html")),
+    ("error.html", include_str!("../../docs.rs/templates/error.html")),
+    ("header/global_alert.html", include_str!("../../docs.rs/templates/header/global_alert.html")),
+    ("header/package_navigation.html", include_str!("../../docs.rs/templates/header/package_navigation.html")),
+    ("header/topbar.html", include_str!("../../docs.rs/templates/header/topbar.html")),
+    ("header/topbar_begin.html", include_str!("../../docs.rs/templates/header/topbar_begin.html")),
+    ("header/topbar_end.html", include_str!("../../docs.rs/templates/header/topbar_end.html")),
+    ("macros.html", include_str!("../../docs.rs/templates/macros.html")),
+    ("releases/activity.html", include_str!("../../docs.rs/templates/releases/activity.html")),
+    ("releases/build_queue.html", include_str!("../../docs.rs/templates/releases/build_queue.html")),
+    ("releases/feed.xml", include_str!("../../docs.rs/templates/releases/feed.xml")),
+    ("releases/header.html", include_str!("../../docs.rs/templates/releases/header.html")),
+    ("releases/releases.html", include_str!("../../docs.rs/templates/releases/releases.html")),
+    ("releases/search_results.html", include_str!("../../docs.rs/templates/releases/search_results.html")),
+    ("rustdoc/body.html", include_str!("../../docs.rs/templates/rustdoc/body.html")),
+    ("rustdoc/head.html", include_str!("../../docs.rs/templates/rustdoc/head.html")),
+    ("rustdoc/platforms.html", include_str!("../../docs.rs/templates/rustdoc/platforms.html")),
+    ("rustdoc/releases.html", include_str!("../../docs.rs/templates/rustdoc/releases.html")),
+    ("rustdoc/topbar.html", include_str!("../../docs.rs/templates/rustdoc/topbar.html")),
+    ("rustdoc/vendored.html", include_str!("../../docs.rs/templates/rustdoc/vendored.html")),
+    ("storage-change-detection.html", include_str!("../../docs.rs/templates/storage-change-detection.html")),
+    ("style/rustdoc-2021-12-05.scss", include_str!("../../docs.rs/templates/style/rustdoc-2021-12-05.scss")),
+    ("style/rustdoc.scss", include_str!("../../docs.rs/templates/style/rustdoc.scss")),
+    ("style/style.scss", include_str!("../../docs.rs/templates/style/style.scss")),
+    ("style/_fa.scss", include_str!("../../docs.rs/templates/style/_fa.scss")),
+    ("style/_navbar.scss", include_str!("../../docs.rs/templates/style/_navbar.scss")),
+    ("style/_rustdoc-common.scss", include_str!("../../docs.rs/templates/style/_rustdoc-common.scss")),
+    ("style/_syntax-themes.scss", include_str!("../../docs.rs/templates/style/_syntax-themes.scss")),
+    ("style/_syntax.scss", include_str!("../../docs.rs/templates/style/_syntax.scss")),
+    ("style/_themes.scss", include_str!("../../docs.rs/templates/style/_themes.scss")),
+    ("style/_utils.scss", include_str!("../../docs.rs/templates/style/_utils.scss")),
+    ("style/_vars.scss", include_str!("../../docs.rs/templates/style/_vars.scss")),
+    ("theme.js", include_str!("../../docs.rs/templates/theme.js")),
+  ]
+}
+pub fn raw_static() -> Vec<(&'static str, &'static [u8])> {
+  vec![
+    ("ayu-highlight.css", include_bytes!("../../docs.rs/static/ayu-highlight.css")),
+    ("favicon.ico", include_bytes!("../../docs.rs/static/favicon.ico")),
+    ("FiraSans-LICENSE.txt", include_bytes!("../../docs.rs/static/FiraSans-LICENSE.txt")),
+    ("FiraSans-Medium.woff", include_bytes!("../../docs.rs/static/FiraSans-Medium.woff")),
+    ("FiraSans-Medium.woff2", include_bytes!("../../docs.rs/static/FiraSans-Medium.woff2")),
+    ("FiraSans-Regular.woff", include_bytes!("../../docs.rs/static/FiraSans-Regular.woff")),
+    ("FiraSans-Regular.woff2", include_bytes!("../../docs.rs/static/FiraSans-Regular.woff2")),
+    ("index.js", include_bytes!("../../docs.rs/static/index.js")),
+    ("keyboard.js", include_bytes!("../../docs.rs/static/keyboard.js")),
+    ("menu.js", include_bytes!("../../docs.rs/static/menu.js")),
+    ("opensearch.xml", include_bytes!("../../docs.rs/static/opensearch.xml")),
+    ("robots.txt", include_bytes!("../../docs.rs/static/robots.txt")),
+    ("source.js", include_bytes!("../../docs.rs/static/source.js")),
+    ("SourceCodePro-It.ttf.woff", include_bytes!("../../docs.rs/static/SourceCodePro-It.ttf.woff")),
+    ("SourceCodePro-It.ttf.woff2", include_bytes!("../../docs.rs/static/SourceCodePro-It.ttf.woff2")),
+    ("SourceCodePro-LICENSE.md", include_bytes!("../../docs.rs/static/SourceCodePro-LICENSE.md")),
+    ("SourceCodePro-Regular.ttf.woff", include_bytes!("../../docs.rs/static/SourceCodePro-Regular.ttf.woff")),
+    ("SourceCodePro-Regular.ttf.woff2", include_bytes!("../../docs.rs/static/SourceCodePro-Regular.ttf.woff2")),
+    ("SourceCodePro-Semibold.ttf.woff", include_bytes!("../../docs.rs/static/SourceCodePro-Semibold.ttf.woff")),
+    ("SourceCodePro-Semibold.ttf.woff2", include_bytes!("../../docs.rs/static/SourceCodePro-Semibold.ttf.woff2")),
+    ("SourceSerif4-Bold.ttf.woff", include_bytes!("../../docs.rs/static/SourceSerif4-Bold.ttf.woff")),
+    ("SourceSerif4-Bold.ttf.woff2", include_bytes!("../../docs.rs/static/SourceSerif4-Bold.ttf.woff2")),
+    ("SourceSerif4-It.ttf.woff", include_bytes!("../../docs.rs/static/SourceSerif4-It.ttf.woff")),
+    ("SourceSerif4-It.ttf.woff2", include_bytes!("../../docs.rs/static/SourceSerif4-It.ttf.woff2")),
+    ("SourceSerif4-LICENSE.md", include_bytes!("../../docs.rs/static/SourceSerif4-LICENSE.md")),
+    ("SourceSerif4-Regular.ttf.woff", include_bytes!("../../docs.rs/static/SourceSerif4-Regular.ttf.woff")),
+    ("SourceSerif4-Regular.ttf.woff2", include_bytes!("../../docs.rs/static/SourceSerif4-Regular.ttf.woff2")),
+  ]
 }

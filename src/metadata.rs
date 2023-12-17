@@ -76,6 +76,7 @@ where
     Ok((|| outer?.docs?.rs)().unwrap_or_default())
 }
 
+#[allow(dead_code)]
 impl Package {
     pub fn is_proc_macro(&self) -> bool {
         for target in &self.targets {

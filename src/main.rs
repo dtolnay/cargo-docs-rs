@@ -4,6 +4,7 @@
     clippy::uninlined_format_args
 )]
 
+#[cfg(feature = "accessory")]
 mod docs_rs;
 mod metadata;
 mod parser;
@@ -11,14 +12,10 @@ mod parser;
 use crate::parser::{Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
 use clap::{CommandFactory as _, Parser as _};
-use docs_rs::generate_static_servers;
-use env_logger as logger;
-use log::trace;
 use metadata::{DocumentationOptions, Metadata};
 use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
-use std::path::PathBuf;
 use std::process::{self, Command, Stdio};
 
 cargo_subcommand_metadata::description!("Imitate the documentation build that docs.rs would do");
@@ -55,7 +52,7 @@ fn do_main() -> Result<()> {
         .context("Failed to parse output of `cargo metadata`")?;
 
     #[cfg(feature = "accessory")]
-    let target_directory: PathBuf = {
+    let target_directory: std::path::PathBuf = {
         let metadata_map: Map<String, serde_json::Value> =
             serde_json::from_slice(&output.stdout)
                 .context("Failed to parse output of `cargo metadata`")?;
@@ -65,8 +62,8 @@ fn do_main() -> Result<()> {
     // tracingを使うときは、cargo docs-rs --verboseを実行する
     #[cfg(feature = "accessory")]
     if args.verbose {
-        env::set_var("RUST_LOG", "TRACE");
-        logger::init();
+        env::set_var("RUST_LOG", "");
+        env_logger::init();
     }
 
     let mut packages = Map::new();
@@ -76,6 +73,7 @@ fn do_main() -> Result<()> {
 
     let default_documentation_options = DocumentationOptions::default();
     let mut proc_macro = false;
+    #[allow(unused_variables)]
     let (metadata, pkg_name) = if let Some(package) = &args.package {
         let mut package_metadata = &default_documentation_options;
         let mut pkg_name = String::new();
@@ -260,7 +258,7 @@ fn do_main() -> Result<()> {
 
     #[cfg(feature = "accessory")]
     if args.accessory {
-        generate_static_servers(target_directory, pkg_name, metadata.clone(), 10)?;
+        docs_rs::generate_static_servers(target_directory, pkg_name, metadata.clone(), 10)?;
     }
 
     Ok(())
