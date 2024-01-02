@@ -10,10 +10,10 @@ license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/cargo-docs-rs"
 
 [dependencies]
-anyhow = "1"
+anyhow = "1.0.79"
 cargo-subcommand-metadata = "0.1"
 clap = { version = "4", features = ["deprecated", "derive"] }
-serde = "1"
-serde_derive = "1"
-serde_json = "1"
+serde = "1.0.194"
+serde_derive = "1.0.194"
+serde_json = "1.0.110"
 toml = "0.8"
