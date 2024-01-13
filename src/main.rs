@@ -46,7 +46,8 @@ fn do_main() -> Result<()> {
         process::exit(output.status.code().unwrap_or(1));
     }
 
-    let metadata: Metadata = serde_json::from_slice(&output.stdout)
+    let mut json = serde_json::Deserializer::from_slice(&output.stdout);
+    let metadata: Metadata = serde_path_to_error::deserialize(&mut json)
         .context("Failed to parse output of `cargo metadata`")?;
 
     let mut packages = Map::new();
