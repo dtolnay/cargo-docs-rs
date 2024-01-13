@@ -14,6 +14,7 @@ use clap::{CommandFactory as _, Parser as _};
 use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
+use std::mem;
 use std::process::{self, Command, Stdio};
 
 cargo_subcommand_metadata::description!("Imitate the documentation build that docs.rs would do");
@@ -47,12 +48,24 @@ fn do_main() -> Result<()> {
     }
 
     let mut json = serde_json::Deserializer::from_slice(&output.stdout);
-    let metadata: Metadata = serde_path_to_error::deserialize(&mut json)
+    let mut metadata: Metadata = serde_path_to_error::deserialize(&mut json)
         .context("Failed to parse output of `cargo metadata`")?;
 
     let mut packages = Map::new();
     for pkg in metadata.packages {
         packages.insert(pkg.id.clone(), pkg);
+    }
+
+    for workspace_member in &mut metadata.workspace_members {
+        let package = packages.get_mut(workspace_member).unwrap();
+        if package.metadata.is_err() {
+            let metadata_error =
+                mem::replace(&mut package.metadata, Ok(DocumentationOptions::default()))
+                    .unwrap_err();
+            let name = &package.name;
+            let context = format!("failed to parse `package.metadata.docs.rs` for {name}");
+            return Err(anyhow::Error::new(metadata_error).context(context));
+        }
     }
 
     let default_documentation_options = DocumentationOptions::default();
@@ -63,7 +76,7 @@ fn do_main() -> Result<()> {
             if packages[workspace_member].name == *package {
                 let package = &packages[workspace_member];
                 proc_macro = package.is_proc_macro();
-                package_metadata = &package.metadata;
+                package_metadata = package.metadata.as_ref().unwrap();
                 break;
             }
         }
@@ -71,7 +84,7 @@ fn do_main() -> Result<()> {
     } else if let Some(root) = metadata.resolve.root {
         let package = &packages[&root];
         proc_macro = package.is_proc_macro();
-        &package.metadata
+        package.metadata.as_ref().unwrap()
     } else {
         let mut options = String::new();
         for (i, member) in metadata.workspace_members.iter().enumerate() {

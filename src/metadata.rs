@@ -1,5 +1,6 @@
 use serde::de::{Deserialize, Deserializer};
 use serde_derive::Deserialize;
+use serde_json::Value;
 
 #[derive(Deserialize, Debug)]
 pub struct Metadata {
@@ -14,7 +15,7 @@ pub struct Package {
     pub id: PackageId,
     pub targets: Vec<Target>,
     #[serde(deserialize_with = "deserialize_docs_rs")]
-    pub metadata: DocumentationOptions,
+    pub metadata: Result<DocumentationOptions, serde_json::Error>,
 }
 
 #[derive(Deserialize, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -58,7 +59,9 @@ pub struct DocumentationOptions {
     pub cargo_args: Vec<String>,
 }
 
-fn deserialize_docs_rs<'de, D>(deserializer: D) -> Result<DocumentationOptions, D::Error>
+fn deserialize_docs_rs<'de, D>(
+    deserializer: D,
+) -> Result<serde_json::Result<DocumentationOptions>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -69,11 +72,16 @@ where
 
     #[derive(Deserialize)]
     struct Inner {
-        pub rs: Option<DocumentationOptions>,
+        pub rs: Option<Value>,
     }
 
     let outer: Option<Outer> = Deserialize::deserialize(deserializer)?;
-    Ok((|| outer?.docs?.rs)().unwrap_or_default())
+    let Some(value) = (|| outer?.docs?.rs)() else {
+        let default = Ok(DocumentationOptions::default());
+        return Ok(default);
+    };
+
+    Ok(serde_json::from_value(value))
 }
 
 impl Package {
