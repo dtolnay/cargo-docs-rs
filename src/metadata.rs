@@ -15,7 +15,7 @@ pub struct Package {
     pub id: PackageId,
     pub targets: Vec<Target>,
     #[serde(deserialize_with = "deserialize_docs_rs")]
-    pub metadata: Result<DocumentationOptions, serde_json::Error>,
+    pub metadata: Result<DocumentationOptions, serde_path_to_error::Error<serde_json::Error>>,
 }
 
 #[derive(Deserialize, Clone, Debug, Eq, Ord, PartialEq, PartialOrd)]
@@ -61,7 +61,7 @@ pub struct DocumentationOptions {
 
 fn deserialize_docs_rs<'de, D>(
     deserializer: D,
-) -> Result<serde_json::Result<DocumentationOptions>, D::Error>
+) -> Result<Result<DocumentationOptions, serde_path_to_error::Error<serde_json::Error>>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -81,7 +81,7 @@ where
         return Ok(default);
     };
 
-    Ok(serde_json::from_value(value))
+    Ok(serde_path_to_error::deserialize(value))
 }
 
 impl Package {
