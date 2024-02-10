@@ -89,7 +89,7 @@ fn do_main() -> Result<()> {
         let mut options = String::new();
         for (i, member) in metadata.workspace_members.iter().enumerate() {
             options += if i == 0 { "" } else { " | " };
-            options += &packages[&member].name;
+            options += &packages[member].name;
         }
         bail!(
             "Pass `-p [{}]` to select a single workspace member",
