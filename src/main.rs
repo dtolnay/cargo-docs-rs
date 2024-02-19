@@ -176,14 +176,13 @@ fn do_main() -> Result<()> {
     }
 
     let mut rustflags = metadata.rustc_args.clone();
-    rustflags.insert(0, "--cfg=docsrs".to_owned());
     if let Some(encoded_rustflags) = env::var_os("CARGO_ENCODED_RUSTFLAGS") {
         if let Some(encoded_rustflags) = encoded_rustflags.to_str() {
-            rustflags.splice(1..1, encoded_rustflags.split('\x1f').map(str::to_owned));
+            rustflags.splice(0..0, encoded_rustflags.split('\x1f').map(str::to_owned));
         }
     } else if let Some(env_rustflags) = env::var_os("RUSTFLAGS") {
         if let Some(env_rustflags) = env_rustflags.to_str() {
-            rustflags.splice(1..1, env_rustflags.split_whitespace().map(str::to_owned));
+            rustflags.splice(0..0, env_rustflags.split_whitespace().map(str::to_owned));
         }
     }
 
