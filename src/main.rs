@@ -188,12 +188,6 @@ fn do_main() -> Result<()> {
 
     cargo_rustdoc.arg("--config");
     cargo_rustdoc.arg(format!(
-        "build.rustflags={}",
-        toml::Value::try_from(&rustflags).unwrap(),
-    ));
-
-    cargo_rustdoc.arg("--config");
-    cargo_rustdoc.arg(format!(
         "host.rustflags={}",
         toml::Value::try_from(&rustflags).unwrap(),
     ));
