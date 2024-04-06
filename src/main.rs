@@ -144,12 +144,25 @@ fn do_main() -> Result<()> {
         }
     }
 
+    let mut rustflags = metadata.rustc_args.clone();
+    if let Some(encoded_rustflags) = env::var_os("CARGO_ENCODED_RUSTFLAGS") {
+        if let Some(encoded_rustflags) = encoded_rustflags.to_str() {
+            rustflags.splice(0..0, encoded_rustflags.split('\x1f').map(str::to_owned));
+        }
+    } else if let Some(env_rustflags) = env::var_os("RUSTFLAGS") {
+        if let Some(env_rustflags) = env_rustflags.to_str() {
+            rustflags.splice(0..0, env_rustflags.split_whitespace().map(str::to_owned));
+        }
+    }
+
     let mut cargo_rustdoc = cargo_command();
     cargo_rustdoc.arg("rustdoc");
     cargo_rustdoc.arg("-Zunstable-options");
     cargo_rustdoc.arg("-Zrustdoc-map");
-    cargo_rustdoc.arg("-Zhost-config");
-    cargo_rustdoc.arg("-Ztarget-applies-to-host");
+    if !rustflags.is_empty() {
+        cargo_rustdoc.arg("-Zhost-config");
+        cargo_rustdoc.arg("-Ztarget-applies-to-host");
+    }
     propagate_common_args(&mut cargo_rustdoc, &args);
     cargo_rustdoc.env("DOCS_RS", "1");
 
@@ -174,32 +187,11 @@ fn do_main() -> Result<()> {
         cargo_rustdoc.flag_value("--target", target);
     }
 
-    let mut rustflags = metadata.rustc_args.clone();
-    if let Some(encoded_rustflags) = env::var_os("CARGO_ENCODED_RUSTFLAGS") {
-        if let Some(encoded_rustflags) = encoded_rustflags.to_str() {
-            rustflags.splice(0..0, encoded_rustflags.split('\x1f').map(str::to_owned));
-        }
-    } else if let Some(env_rustflags) = env::var_os("RUSTFLAGS") {
-        if let Some(env_rustflags) = env_rustflags.to_str() {
-            rustflags.splice(0..0, env_rustflags.split_whitespace().map(str::to_owned));
-        }
+    if !rustflags.is_empty() {
+        let rustflags = toml::Value::try_from(&rustflags).unwrap();
+        cargo_rustdoc.flag_value("--config", format!("build.rustflags={}", rustflags));
+        cargo_rustdoc.flag_value("--config", format!("host.rustflags={}", rustflags));
     }
-
-    cargo_rustdoc.flag_value(
-        "--config",
-        format!(
-            "build.rustflags={}",
-            toml::Value::try_from(&rustflags).unwrap(),
-        ),
-    );
-
-    cargo_rustdoc.flag_value(
-        "--config",
-        format!(
-            "host.rustflags={}",
-            toml::Value::try_from(&rustflags).unwrap(),
-        ),
-    );
 
     let mut rustdocflags = metadata.rustdoc_args.clone();
     rustdocflags.splice(
