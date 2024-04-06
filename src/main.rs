@@ -13,12 +13,9 @@ use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Coloring, Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
 use clap::{CommandFactory as _, Parser as _, ValueEnum as _};
-use std::borrow::Cow;
 use std::collections::BTreeMap as Map;
 use std::env;
-use std::ffi::OsStr;
 use std::io::{self, Write as _};
-use std::iter;
 use std::mem;
 use std::process::{self, Command, Stdio};
 use termcolor::{Color::Green, ColorChoice, ColorSpec, StandardStream, WriteColor as _};
@@ -300,13 +297,22 @@ fn propagate_common_args(cargo: &mut Command, args: &Doc) {
 }
 
 fn print_command(cmd: &Command, color: Coloring) -> Result<()> {
-    let cmd: Vec<Cow<str>> = iter::once(Cow::Borrowed("cargo"))
-        .chain(cmd.get_args().map(OsStr::to_string_lossy))
-        .collect();
-
-    let shell_words = shlex::Quoter::new()
-        .allow_nul(true)
-        .join(cmd.iter().map(Cow::as_ref))?;
+    let mut shell_words = String::new();
+    let quoter = shlex::Quoter::new().allow_nul(true);
+    for arg in cmd.get_args() {
+        let arg_lossy = arg.to_string_lossy();
+        shell_words.push(' ');
+        match arg_lossy.split_once('=') {
+            Some((flag, value)) if flag.starts_with('-') && flag == quoter.quote(flag)? => {
+                shell_words.push_str(flag);
+                shell_words.push('=');
+                if !value.is_empty() {
+                    shell_words.push_str(&quoter.quote(value)?);
+                }
+            }
+            _ => shell_words.push_str(&quoter.quote(&arg_lossy)?),
+        }
+    }
 
     let color_choice = match color {
         Coloring::Auto => ColorChoice::Auto,
@@ -318,6 +324,6 @@ fn print_command(cmd: &Command, color: Coloring) -> Result<()> {
     let _ = stream.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Green)));
     let _ = write!(stream, "{:>12}", "Running");
     let _ = stream.reset();
-    let _ = writeln!(stream, " `{}`", shell_words);
+    let _ = writeln!(stream, " `cargo{}`", shell_words);
     Ok(())
 }
