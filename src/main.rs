@@ -124,7 +124,10 @@ fn do_main() -> Result<()> {
         doc_targets.push(default_target);
     }
 
-    for target in &doc_targets {
+    for &target in &doc_targets {
+        if target == target_triple::HOST {
+            continue;
+        }
         let mut child = Command::new("rustc")
             .arg("-")
             .flag_value("--target", target)
