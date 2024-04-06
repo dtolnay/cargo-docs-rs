@@ -148,7 +148,28 @@ fn do_main() -> Result<()> {
     }
 
     if doc_targets.is_empty() && !proc_macro {
-        doc_targets.push(target_triple::HOST);
+        let docs_rs_default_target = "x86_64-unknown-linux-gnu";
+        if docs_rs_default_target == target_triple::HOST || {
+            let mut child = Command::new("rustc")
+                .arg("-")
+                .flag_value("--target", docs_rs_default_target)
+                .arg("-Zunpretty=expanded")
+                .stdin(Stdio::piped())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()
+                .context("failed to spawn rustc")?;
+            let _ = child.stdin.unwrap().write_all(b"#![no_std]\n");
+            child.stdin = None; // close
+            let status = child
+                .wait()
+                .context("failed to wait for rustc subcommand")?;
+            status.success()
+        } {
+            doc_targets.push(docs_rs_default_target);
+        } else {
+            doc_targets.push(target_triple::HOST);
+        }
     }
 
     let mut rustflags = metadata.rustc_args.clone();
