@@ -4,9 +4,11 @@
     clippy::uninlined_format_args
 )]
 
+mod cmd;
 mod metadata;
 mod parser;
 
+use crate::cmd::CommandExt as _;
 use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Coloring, Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
@@ -41,7 +43,7 @@ fn do_main() -> Result<()> {
 
     let mut cargo_metadata = cargo_command();
     cargo_metadata.arg("metadata");
-    cargo_metadata.arg("--format-version=1");
+    cargo_metadata.flag_value("--format-version", "1");
     propagate_common_args(&mut cargo_metadata, &args);
     cargo_metadata.stdin(Stdio::null());
     cargo_metadata.stdout(Stdio::piped());
@@ -128,8 +130,7 @@ fn do_main() -> Result<()> {
     for target in &doc_targets {
         let mut child = Command::new("rustc")
             .arg("-")
-            .arg("--target")
-            .arg(target)
+            .flag_value("--target", target)
             .arg("-Zunpretty=expanded")
             .stdin(Stdio::piped())
             .stdout(Stdio::null())
@@ -157,13 +158,11 @@ fn do_main() -> Result<()> {
 
     cargo_rustdoc.arg("--lib");
     if let Some(package) = &args.package {
-        cargo_rustdoc.arg("--package");
-        cargo_rustdoc.arg(package);
+        cargo_rustdoc.flag_value("--package", package);
     }
 
     if !metadata.features.is_empty() {
-        cargo_rustdoc.arg("--features");
-        cargo_rustdoc.arg(metadata.features.join(","));
+        cargo_rustdoc.flag_value("--features", metadata.features.join(","));
     }
 
     if metadata.all_features {
@@ -175,8 +174,7 @@ fn do_main() -> Result<()> {
     }
 
     for target in &doc_targets {
-        cargo_rustdoc.arg("--target");
-        cargo_rustdoc.arg(target);
+        cargo_rustdoc.flag_value("--target", target);
     }
 
     let mut rustflags = metadata.rustc_args.clone();
@@ -190,17 +188,21 @@ fn do_main() -> Result<()> {
         }
     }
 
-    cargo_rustdoc.arg("--config");
-    cargo_rustdoc.arg(format!(
-        "build.rustflags={}",
-        toml::Value::try_from(&rustflags).unwrap(),
-    ));
+    cargo_rustdoc.flag_value(
+        "--config",
+        format!(
+            "build.rustflags={}",
+            toml::Value::try_from(&rustflags).unwrap(),
+        ),
+    );
 
-    cargo_rustdoc.arg("--config");
-    cargo_rustdoc.arg(format!(
-        "host.rustflags={}",
-        toml::Value::try_from(&rustflags).unwrap(),
-    ));
+    cargo_rustdoc.flag_value(
+        "--config",
+        format!(
+            "host.rustflags={}",
+            toml::Value::try_from(&rustflags).unwrap(),
+        ),
+    );
 
     let mut rustdocflags = metadata.rustdoc_args.clone();
     rustdocflags.splice(
@@ -218,25 +220,27 @@ fn do_main() -> Result<()> {
     }
     rustdocflags.push("--extern-html-root-takes-precedence".to_owned());
 
-    cargo_rustdoc.arg("--config");
-    cargo_rustdoc.arg(format!(
-        "build.rustdocflags={}",
-        toml::Value::try_from(&rustdocflags).unwrap(),
-    ));
+    cargo_rustdoc.flag_value(
+        "--config",
+        format!(
+            "build.rustdocflags={}",
+            toml::Value::try_from(&rustdocflags).unwrap(),
+        ),
+    );
 
-    cargo_rustdoc.arg("--config");
-    cargo_rustdoc.arg("doc.extern-map.registries.crates-io=\"https://docs.rs\"");
+    cargo_rustdoc.flag_value(
+        "--config",
+        r#"doc.extern-map.registries.crates-io="https://docs.rs""#,
+    );
 
     cargo_rustdoc.args(&metadata.cargo_args);
 
     if let Some(jobs) = args.jobs {
-        cargo_rustdoc.arg("--jobs");
-        cargo_rustdoc.arg(jobs.to_string());
+        cargo_rustdoc.flag_value("--jobs", jobs.to_string());
     }
 
     if let Some(target_dir) = &args.target_dir {
-        cargo_rustdoc.arg("--target-dir");
-        cargo_rustdoc.arg(target_dir);
+        cargo_rustdoc.flag_value("--target-dir", target_dir);
     }
 
     if args.open {
@@ -248,8 +252,7 @@ fn do_main() -> Result<()> {
     }
 
     if let Some(color) = args.color {
-        cargo_rustdoc.arg("--color");
-        cargo_rustdoc.arg(color.to_possible_value().unwrap().get_name());
+        cargo_rustdoc.flag_value("--color", color.to_possible_value().unwrap().get_name());
     }
 
     cargo_rustdoc.env_remove("RUSTFLAGS");
@@ -280,8 +283,7 @@ fn cargo_command() -> Command {
 // Args that are meaningful to both `cargo metadata` and `cargo doc`.
 fn propagate_common_args(cargo: &mut Command, args: &Doc) {
     if let Some(manifest_path) = &args.manifest_path {
-        cargo.arg("--manifest-path");
-        cargo.arg(manifest_path);
+        cargo.flag_value("--manifest-path", manifest_path);
     }
 
     if args.frozen {
