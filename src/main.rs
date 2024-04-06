@@ -10,7 +10,7 @@ mod parser;
 use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
-use clap::{CommandFactory as _, Parser as _};
+use clap::{CommandFactory as _, Parser as _, ValueEnum as _};
 use std::collections::BTreeMap as Map;
 use std::env;
 use std::io::{self, Write as _};
@@ -241,6 +241,11 @@ fn do_main() -> Result<()> {
 
     if args.verbose {
         cargo_rustdoc.arg("--verbose");
+    }
+
+    if let Some(color) = args.color {
+        cargo_rustdoc.arg("--color");
+        cargo_rustdoc.arg(color.to_possible_value().unwrap().get_name());
     }
 
     cargo_rustdoc.env_remove("RUSTFLAGS");

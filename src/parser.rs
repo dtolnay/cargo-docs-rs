@@ -23,6 +23,10 @@ pub struct Doc {
     #[arg(short, long)]
     pub verbose: bool,
 
+    /// Coloring: auto, always, never
+    #[arg(long, value_name = "WHEN", hide_possible_values = true)]
+    pub color: Option<Coloring>,
+
     /// Print version
     #[arg(long)]
     pub version: bool,
