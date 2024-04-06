@@ -100,7 +100,7 @@ fn do_main() -> Result<()> {
         );
     };
 
-    let mut doc_targets = Vec::new();
+    let mut doc_targets: Vec<&str> = Vec::new();
     if !args.target.is_empty() {
         for target in &args.target {
             doc_targets.push(target);
@@ -145,6 +145,10 @@ fn do_main() -> Result<()> {
         if !status.success() {
             process::exit(status.code().unwrap_or(1));
         }
+    }
+
+    if doc_targets.is_empty() && !proc_macro {
+        doc_targets.push(target_triple::HOST);
     }
 
     let mut rustflags = metadata.rustc_args.clone();
