@@ -11,9 +11,12 @@ use crate::metadata::{DocumentationOptions, Metadata};
 use crate::parser::{Coloring, Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
 use clap::{CommandFactory as _, Parser as _, ValueEnum as _};
+use std::borrow::Cow;
 use std::collections::BTreeMap as Map;
 use std::env;
+use std::ffi::OsStr;
 use std::io::{self, Write as _};
+use std::iter;
 use std::mem;
 use std::process::{self, Command, Stdio};
 use termcolor::{Color::Green, ColorChoice, ColorSpec, StandardStream, WriteColor as _};
@@ -256,7 +259,7 @@ fn do_main() -> Result<()> {
 
     if args.verbose {
         let color = args.color.unwrap_or(Coloring::Auto);
-        print_command(&cargo_rustdoc, color);
+        print_command(&cargo_rustdoc, color)?;
     }
 
     let status = cargo_rustdoc.status()?;
@@ -294,7 +297,15 @@ fn propagate_common_args(cargo: &mut Command, args: &Doc) {
     }
 }
 
-fn print_command(cmd: &Command, color: Coloring) {
+fn print_command(cmd: &Command, color: Coloring) -> Result<()> {
+    let cmd: Vec<Cow<str>> = iter::once(cmd.get_program().to_string_lossy())
+        .chain(cmd.get_args().map(OsStr::to_string_lossy))
+        .collect();
+
+    let shell_words = shlex::Quoter::new()
+        .allow_nul(true)
+        .join(cmd.iter().map(Cow::as_ref))?;
+
     let color_choice = match color {
         Coloring::Auto => ColorChoice::Auto,
         Coloring::Always => ColorChoice::Always,
@@ -305,9 +316,6 @@ fn print_command(cmd: &Command, color: Coloring) {
     let _ = stream.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Green)));
     let _ = write!(stream, "{:>12}", "Running");
     let _ = stream.reset();
-    let _ = write!(stream, " `{}", cmd.get_program().to_string_lossy());
-    for arg in cmd.get_args() {
-        let _ = write!(stream, " {}", arg.to_string_lossy());
-    }
-    let _ = writeln!(stream, "`");
+    let _ = writeln!(stream, " `{}`", shell_words);
+    Ok(())
 }
