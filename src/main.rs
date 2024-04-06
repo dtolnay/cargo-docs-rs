@@ -8,14 +8,18 @@ mod metadata;
 mod parser;
 
 use crate::metadata::{DocumentationOptions, Metadata};
-use crate::parser::{Doc, Subcommand};
+use crate::parser::{Coloring, Doc, Subcommand};
 use anyhow::{bail, Context as _, Result};
 use clap::{CommandFactory as _, Parser as _, ValueEnum as _};
+use std::borrow::Cow;
 use std::collections::BTreeMap as Map;
 use std::env;
+use std::ffi::OsStr;
 use std::io::{self, Write as _};
+use std::iter;
 use std::mem;
 use std::process::{self, Command, Stdio};
+use termcolor::{Color::Green, ColorChoice, ColorSpec, StandardStream, WriteColor as _};
 
 cargo_subcommand_metadata::description!("Imitate the documentation build that docs.rs would do");
 
@@ -253,6 +257,11 @@ fn do_main() -> Result<()> {
     cargo_rustdoc.env_remove("CARGO_ENCODED_RUSTFLAGS");
     cargo_rustdoc.env_remove("CARGO_ENCODED_RUSTDOCFLAGS");
 
+    if args.verbose {
+        let color = args.color.unwrap_or(Coloring::Auto);
+        print_command(&cargo_rustdoc, color)?;
+    }
+
     let status = cargo_rustdoc.status()?;
     if !status.success() {
         process::exit(status.code().unwrap_or(1));
@@ -286,4 +295,27 @@ fn propagate_common_args(cargo: &mut Command, args: &Doc) {
     if args.offline {
         cargo.arg("--offline");
     }
+}
+
+fn print_command(cmd: &Command, color: Coloring) -> Result<()> {
+    let cmd: Vec<Cow<str>> = iter::once(cmd.get_program().to_string_lossy())
+        .chain(cmd.get_args().map(OsStr::to_string_lossy))
+        .collect();
+
+    let shell_words = shlex::Quoter::new()
+        .allow_nul(true)
+        .join(cmd.iter().map(Cow::as_ref))?;
+
+    let color_choice = match color {
+        Coloring::Auto => ColorChoice::Auto,
+        Coloring::Always => ColorChoice::Always,
+        Coloring::Never => ColorChoice::Never,
+    };
+
+    let mut stream = StandardStream::stderr(color_choice);
+    let _ = stream.set_color(ColorSpec::new().set_bold(true).set_fg(Some(Green)));
+    let _ = write!(stream, "{:>12}", "Running");
+    let _ = stream.reset();
+    let _ = writeln!(stream, " `{}`", shell_words);
+    Ok(())
 }
