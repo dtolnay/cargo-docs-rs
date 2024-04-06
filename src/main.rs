@@ -298,7 +298,7 @@ fn propagate_common_args(cargo: &mut Command, args: &Doc) {
 }
 
 fn print_command(cmd: &Command, color: Coloring) -> Result<()> {
-    let cmd: Vec<Cow<str>> = iter::once(cmd.get_program().to_string_lossy())
+    let cmd: Vec<Cow<str>> = iter::once(Cow::Borrowed("cargo"))
         .chain(cmd.get_args().map(OsStr::to_string_lossy))
         .collect();
 
