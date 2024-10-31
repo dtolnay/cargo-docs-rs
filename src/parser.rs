@@ -6,7 +6,11 @@ const COMPILATION_OPTIONS: &str = "Compilation Options";
 const MANIFEST_OPTIONS: &str = "Manifest Options";
 
 #[derive(Parser)]
-#[command(bin_name = "cargo", version, author, disable_help_subcommand = true)]
+#[command(
+    bin_name = "cargo",
+    version, author,
+    disable_help_subcommand = true,
+    styles = clap_cargo::style::CLAP_STYLING)]
 pub enum Subcommand {
     /// Imitate the documentation build that docs.rs would do
     #[command(name = "docs-rs", version, author, disable_version_flag = true)]
