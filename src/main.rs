@@ -187,6 +187,7 @@ fn do_main() -> Result<()> {
     cargo_rustdoc.arg("rustdoc");
     cargo_rustdoc.arg("-Zunstable-options");
     cargo_rustdoc.arg("-Zrustdoc-map");
+    cargo_rustdoc.arg("-Zrustdoc-scrape-examples");
     if !rustflags.is_empty() {
         cargo_rustdoc.arg("-Zhost-config");
         cargo_rustdoc.arg("-Ztarget-applies-to-host");
