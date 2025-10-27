@@ -1,6 +1,6 @@
 [package]
 name = "cargo-docs-rs"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["David Tolnay <dtolnay@gmail.com>"]
 categories = ["development-tools::cargo-plugins"]
 description = "Imitate the documentation build that docs.rs would do"
