@@ -8,6 +8,7 @@ edition = "2021"
 keywords = ["cargo", "subcommand", "docs-rs", "documentation"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/dtolnay/cargo-docs-rs"
+rust-version = "1.86"
 
 [dependencies]
 anyhow = "1.0.79"
